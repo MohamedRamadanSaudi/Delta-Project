@@ -8,10 +8,11 @@ const auth = require('../middlewares/AuthMiddleware');
 router.post('/create', auth.auth,auth.isAdmin, User.createUser);
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
+router.post('/admin-login', authController.adminLogin);
 router.post('/forgotPassword', authController.forgotPassword);
 router.post('/verify-email', authController.verifyEmail);
+router.post('/logout', auth.auth, authController.logout);
 
-router.get('/logout', authController.logout);
 router.get('/', auth.auth,auth.isAdmin, User.getAllUsers);
 router.get('/me', auth.auth, User.getCurrentUser);
 router.get('/:id', auth.auth,auth.isAdmin, User.getUser);

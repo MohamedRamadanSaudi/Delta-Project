@@ -15,7 +15,13 @@ exports.sendOTP = catchAsync(async (req, res, next) => {
   const otp = user.generateOTP();
   await user.save({ validateBeforeSave: false });
 
-  await sendEmail(email, 'Your OTP Code', `Your OTP is ${otp}`);
+  console.log('Sending OTP email to:', email);
+  
+  await sendEmail({
+    email: email,
+    subject: 'Your OTP Code',
+    message: `Your OTP is ${otp}`,
+  });
 
   res.status(200).json({
     status: 'success',

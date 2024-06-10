@@ -11,15 +11,20 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendEmail(options) {
-
-  console.log('Sending email to:', options.email);
+  console.log('Email options:', options);
   
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to: options.email, // Change this line to use options.email
-    subject: options.subject,
-    text: options.message,
-  });
+  try {
+    let info = await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: options.email,
+      subject: options.subject,
+      text: options.message,
+    });
+    console.log('Email sent: %s', info.messageId);
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw new Error('Error sending email');
+  }
 }
 
 module.exports = sendEmail;

@@ -23,8 +23,14 @@ const UserSchema = new mongoose.Schema({
   },
   anotherPhone: {
     type: String,
-    unique: true,
-    validate: [validator.isMobilePhone, 'Please provide a valid phone number']
+    validate: {
+      validator: function(value) {
+        return value === null || value === '' || validator.isMobilePhone(value);
+      },
+      message: 'Please provide a valid phone number'
+    },
+    default: null,
+    sparse: true // Allows multiple null values
   },
   role: {
     type: String,

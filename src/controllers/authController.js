@@ -34,7 +34,7 @@ function createSendToken(user, statusCode, req, res) {
 }
 
 exports.signup = catchAsync(async function (req, res, next) {
-  const { name, email, phone, password, confirm_password } = req.body;
+  const { name, email, phone, password, confirm_password, role } = req.body;
 
   // Validate input fields
   if (!name || !email || !phone || !password || !confirm_password) {
@@ -47,17 +47,20 @@ exports.signup = catchAsync(async function (req, res, next) {
     email,
     phone,
     password,
-    confirm_password
+    confirm_password,
+    role
   });
 
   // Generate OTP and send it
   const otp = newUser.generateOTP();
   await newUser.save({ validateBeforeSave: false });
 
+  console.log('Sending OTP email to:', email);
+
   await sendEmail({
-    email,
+    email: email,
     subject: 'Your OTP Code',
-    message: `Your OTP is ${otp}`
+    message: `Your OTP is ${otp}`,
   });
 
   res.status(200).json({
@@ -107,12 +110,40 @@ exports.login = catchAsync(async function (req, res, next) {
   createSendToken(user, 200, req, res);
 });
 
-exports.logout = function (req, res) {
-  res.cookie('jwt', 'loggedout', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true
-  });
-  res.status(200).json({ status: 'success' });
+exports.adminLogin = catchAsync(async function (req, res, next) {
+  const { email, password } = req.body;
+
+  // 1) Check if email and password exist
+  if (!email || !password) {
+    return next(new AppError('Please provide email and password!', 400));
+  }
+
+  // 2) Check if user exists && password is correct
+  const user = await User.findOne({ email: email }).select('+password');
+
+  if (!user || !(await user.correctPassword(password, user.password))) {
+    return next(new AppError('Incorrect email or password', 401));
+  }
+
+  // 3) Check if user has admin role
+  if (user.role !== 'admin') {
+    return next(new AppError('You do not have permission to access this route', 403));
+  }
+
+  // 4) If everything ok, send token to client
+  createSendToken(user, 200, req, res);
+});
+
+
+exports.logout = function(req, res) {
+  const cookies = req.cookies?.keys(); // Optional chaining
+
+  if (cookies) {
+    cookies.forEach(cookie => {
+      res.clearCookie(cookie);
+    });
+  }
+  res.status(200).json({ message: 'Logout successful' });
 };
 
 
@@ -152,26 +183,24 @@ exports.restrictTo = function (...roles) {
 };
 
 exports.forgotPassword = catchAsync(async function (req, res, next) {
-  // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
     return next(new AppError('There is no user with that email address.', 404));
   }
 
-  // 2) Generate the random reset token
   const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
-  // 3) Send it to user's email
   const resetURL = `${req.protocol}://${req.get('host')}/api/users/resetPassword/${resetToken}`;
   const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
 
   try {
-    console.log('Sending email to:', user.email); // Debugging statement
+    console.log('Sending password reset email to:', user.email);
+
     await sendEmail({
-      email: user.email, // Ensure this is correctly passed
+      email: user.email,
       subject: 'Your password reset token (valid for 10 min)',
-      message,
+      message: message,
     });
 
     res.status(200).json({
@@ -179,7 +208,7 @@ exports.forgotPassword = catchAsync(async function (req, res, next) {
       message: 'Token sent to email!',
     });
   } catch (err) {
-    console.error('Error sending email:', err); // Log the error
+    console.error('Error sending email:', err);
 
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
