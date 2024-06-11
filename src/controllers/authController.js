@@ -34,10 +34,10 @@ function createSendToken(user, statusCode, req, res) {
 }
 
 exports.signup = catchAsync(async function (req, res, next) {
-  const { name, email, phone, password, confirm_password, role } = req.body;
+  const { name, email, phone, role } = req.body;
 
   // Validate input fields
-  if (!name || !email || !phone || !password || !confirm_password) {
+  if (!name || !email || !phone) {
     return next(new AppError('Please provide all required fields', 400));
   }
 
@@ -46,8 +46,6 @@ exports.signup = catchAsync(async function (req, res, next) {
     name,
     email,
     phone,
-    password,
-    confirm_password,
     role
   });
 
@@ -69,24 +67,23 @@ exports.signup = catchAsync(async function (req, res, next) {
   });
 });
 
-exports.verifyEmail = catchAsync(async (req, res, next) => {
-  const { email, otp } = req.body;
+exports.setPasswordAfterOTP = catchAsync(async (req, res, next) => {
+  const { email, password, confirm_password } = req.body;
+
+  // Validate input fields
+  if (!email || !password || !confirm_password) {
+    return next(new AppError('Please provide all required fields', 400));
+  }
+
   const user = await User.findOne({ email });
 
   if (!user) {
     return next(new AppError('User not found', 400));
   }
 
-  if (!user.otp || user.otpExpires < Date.now()) {
-    return next(new AppError('OTP has expired', 400));
-  }
+  user.password = password;
+  user.confirm_password = confirm_password;
 
-  if (user.otp !== otp) {
-    return next(new AppError('Invalid OTP', 400));
-  }
-
-  user.otp = undefined;
-  user.otpExpires = undefined;
   await user.save();
 
   createSendToken(user, 200, req, res);

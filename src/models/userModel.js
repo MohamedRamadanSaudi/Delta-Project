@@ -39,7 +39,6 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please provide a password'],
     minlength: 8,
     validate: {
       validator: function(value) {
@@ -51,7 +50,6 @@ const UserSchema = new mongoose.Schema({
   },
   confirm_password: {
     type: String,
-    required: [true, 'Please confirm your password'],
     validate: {
       validator: function(el) {
         return el === this.password;
