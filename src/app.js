@@ -9,6 +9,7 @@ const connectDB = require('./config/database');
 
 const User = require('./routes/userRoutes');
 const Otp = require('./routes/otpRoutes');
+const Complaint = require('./routes/complaintRoutes');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(bodyParser.json());
 // Routes
 app.use('/api/users', User);
 app.use('/api/otp', Otp);
+app.use('/api/complaints', Complaint);
 
 const PORT = process.env.PORT || 3000;
 
