@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const Blacklist = require("../models/blacklistModel");
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 const catchAsync = require("../utils/catchAsync");
@@ -13,6 +14,8 @@ const auth = catchAsync(async function (req, res, next) {
     token = req.cookies.jwt;
   }
 
+  console.log("Token received:", token); // Debugging
+
   // If token is not present or invalid, user is not logged in
   if (!token) {
     return next(new AppError('You are not logged in! Please log in to get access.', 401));
@@ -22,10 +25,18 @@ const auth = catchAsync(async function (req, res, next) {
     // 2) Verification token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    console.log("Decoded token:", decoded); // Debugging
+
     // 3) Check if user still exists
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
       return next(new AppError('The user belonging to this token does no longer exist.', 401));
+    }
+
+    // Check if the token is blacklisted
+    const blacklistedToken = await Blacklist.findOne({ token });
+    if (blacklistedToken) {
+      return next(new AppError('Token has been blacklisted. Please log in again.', 401));
     }
 
     // 4) Check if user changed password after the token was issued
@@ -37,7 +48,7 @@ const auth = catchAsync(async function (req, res, next) {
     req.user = currentUser;
     next();
   } catch (err) {
-    // Token verification failed, user is not logged in
+    console.error("Token verification failed:", err); // Debugging
     return next(new AppError('Invalid token! Please log in again.', 401));
   }
 });
