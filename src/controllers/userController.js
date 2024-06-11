@@ -9,8 +9,7 @@ function isValidObjectId(id) {
 }
 
 exports.getCurrentUser = catchAsync(async (req, res, next) => {
-  // req.user is set in the protect middleware
-  const user = req.user;
+  const user = await User.findById(req.user._id).populate('addresses');
 
   if (!user) {
     return next(new AppError('No user found', 404));
@@ -25,7 +24,7 @@ exports.getCurrentUser = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
+  const users = await User.find().populate('addresses');
 
   res.status(200).json({
     status: 'success',
@@ -43,7 +42,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid user ID', 400));
   }
 
-  const user = await User.findById(id);
+  const user = await User.findById(id).populate('addresses');
 
   if (!user) {
     return next(new AppError('No user found with that ID', 404));
@@ -78,7 +77,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
   const user = await User.findByIdAndUpdate(id, req.body, {
     new: true,
     runValidators: true
-  });
+  }).populate('addresses');
 
   if (!user) {
     return next(new AppError('No user found with that ID', 404));
@@ -130,7 +129,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   const updatedUser = await User.findByIdAndUpdate(userId, filteredBody, {
     new: true,
     runValidators: true
-  });
+  }).populate('addresses');
 
   if (!updatedUser) {
     return next(new AppError('No user found with that ID', 404));

@@ -57,6 +57,12 @@ const UserSchema = new mongoose.Schema({
       message: 'Passwords are not the same!'
     }
   },
+  addresses: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Address'
+    }
+  ],
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
