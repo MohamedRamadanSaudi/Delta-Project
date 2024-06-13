@@ -24,6 +24,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Routes
+app.use('/', (req, res) => res.send('Hello World!'));
 app.use('/api/users', User);
 app.use('/api/otp', Otp);
 app.use('/api/complaints', Complaint);
