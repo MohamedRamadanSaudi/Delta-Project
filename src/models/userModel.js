@@ -28,9 +28,7 @@ const UserSchema = new mongoose.Schema({
         return value === null || value === '' || validator.isMobilePhone(value);
       },
       message: 'Please provide a valid phone number'
-    },
-    default: null,
-    sparse: true // Allows multiple null values
+    }
   },
   role: {
     type: String,

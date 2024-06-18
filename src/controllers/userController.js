@@ -116,7 +116,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   const filteredBody = {};
-  const allowedFields = ['name', 'email', 'phone'];
+  const allowedFields = ['name', 'email', 'phone', 'anotherPhone'];
   Object.keys(req.body).forEach(el => {
     if (allowedFields.includes(el)) filteredBody[el] = req.body[el];
   });
