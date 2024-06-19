@@ -12,6 +12,7 @@ const Otp = require('./routes/otpRoutes');
 const Complaint = require('./routes/complaintRoutes');
 const Address = require('./routes/addressRoutes');
 const ProductCategory = require('./routes/productCategoryRoutes');
+const Product = require('./routes//productRoutes');
 
 const app = express();
 
@@ -30,7 +31,8 @@ app.use('/api/otp', Otp);
 app.use('/api/complaints', Complaint);
 app.use('/api/addresses', Address);
 app.use('/api/product-categories', ProductCategory);
-app.use('/api/', (req, res) => res.send('Hello World!'));
+app.use('/api/products', Product);
+app.use('/', (req, res) => res.send('Hello World!'));
 
 const PORT = process.env.PORT || 3000;
 
