@@ -32,7 +32,6 @@ app.use('/api/complaints', Complaint);
 app.use('/api/addresses', Address);
 app.use('/api/product-categories', ProductCategory);
 app.use('/api/products', Product);
-app.use('/', (req, res) => res.send('Hello World!'));
 
 const PORT = process.env.PORT || 3000;
 

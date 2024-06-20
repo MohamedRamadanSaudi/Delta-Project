@@ -14,7 +14,6 @@ const auth = catchAsync(async function (req, res, next) {
     token = req.cookies.jwt;
   }
 
-  console.log("Token received:", token); // Debugging
 
   // If token is not present or invalid, user is not logged in
   if (!token) {
@@ -25,7 +24,6 @@ const auth = catchAsync(async function (req, res, next) {
     // 2) Verification token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log("Decoded token:", decoded); // Debugging
 
     // 3) Check if user still exists
     const currentUser = await User.findById(decoded.id);

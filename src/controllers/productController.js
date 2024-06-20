@@ -1,61 +1,287 @@
+const mongoose = require('mongoose');
 const Product = require('../models/productModel');
+const Category = require('../models/productCategoryModel');
+const User = require('../models/userModel');
+const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
+const slugify = require('slugify');
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
+const upload = require('../config/multer');
+
+// Utility function to validate MongoDB Object IDs
+function isValidObjectId(id) {
+  return mongoose.Types.ObjectId.isValid(id);
+}
+
+// Middleware for handling file uploads
+exports.uploadProductMainPhoto = upload.single('mainPhoto'); // Upload main photo
+exports.uploadProductPhotos = upload.array('photos', 5); // Allow up to 5 photos per product
 
 // Create a new product
-exports.createProduct = async (req, res) => {
-  try {
-    const product = new Product(req.body);
-    await product.save();
-    res.status(201).json(product);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+exports.createProduct = catchAsync(async (req, res, next) => {
+  const { category, name, description } = req.body;
 
-// Get all products
-exports.getProducts = async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.status(200).json(products);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  // Check if the category name is provided
+  if (!category) {
+    return next(new AppError('Category name is required', 400));
   }
-};
+
+  // Find the category by name
+  const categoryExists = await Category.findOne({ title: category });
+  if (!categoryExists) {
+    return next(new AppError('Category not found', 404));
+  }
+
+  // Create slug from product name
+  const slug = slugify(name, { lower: true });
+
+  if (req.file && req.file.path) {
+    try {
+      // Upload main photo to Cloudinary
+      const mainPhotoResult = await cloudinary.uploader.upload(req.file.path, {
+        public_id: `products/${slug}-${Date.now()}-main-photo`, // Ensure unique public_id
+        overwrite: false, // Do not overwrite existing file
+        tags: ['main_photo'] // Optional tags for organizing in Cloudinary
+      });
+      const mainPhoto = mainPhotoResult.secure_url;
+
+      // Create a new product
+      const newProduct = new Product({
+        category: categoryExists._id, // Use the ID of the category
+        slug,
+        name,
+        description,
+        mainPhoto,
+        photos: []
+      });
+
+      await newProduct.save();
+      res.status(201).json(newProduct);
+    } catch (error) {
+      return next(new AppError('Failed to upload main photo', 500));
+    }
+  } else {
+    return next(new AppError('Main photo is required', 400));
+  }
+});
+
+// Upload photos for an existing product
+exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  // Validate if id is a valid MongoDB ObjectId
+  if (!isValidObjectId(id)) {
+    return next(new AppError('Invalid product ID', 400));
+  }
+
+  try {
+    // Find the product by ID
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new AppError('Product not found', 404));
+    }
+
+    // Upload additional photos to Cloudinary
+    const photos = [];
+    if (req.files && req.files.length > 0) {
+      const slug = product.slug; // Assuming you have a 'slug' field in your Product model
+      const existingPhotosCount = product.photos.length; // Get the current number of photos
+
+      for (let i = 0; i < req.files.length; i++) {
+        const file = req.files[i];
+        const uniqueIdentifier = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+
+        const photoResult = await cloudinary.uploader.upload(file.path, {
+          public_id: `products/${slug}-${existingPhotosCount + i}-${uniqueIdentifier}`, // Ensure unique public_id
+          overwrite: false, // Do not overwrite existing file
+          tags: ['product_photo'] // Optional tags for organizing in Cloudinary
+        });
+
+        photos.push(photoResult.secure_url);
+      }
+
+      // Add new photos to the product's photos array
+      product.photos = [...product.photos, ...photos];
+      await product.save();
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Photos uploaded successfully',
+        data: {
+          product
+        }
+      });
+    } else {
+      return next(new AppError('No photos were uploaded', 400));
+    }
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+});
+
+// Get all products, optionally filtered by category
+exports.getProducts = catchAsync(async (req, res, next) => {
+  let filter = {};
+  if (req.query.categoryId) {
+    filter.category = req.query.categoryId;
+  }
+
+  // If categoryName is provided, filter by category name
+  if (req.query.category) {
+    const category = await Category.findOne({ title: req.query.category });
+    if (!category) {
+      return next(new AppError('Category not found', 404));
+    }
+    filter.category = category._id;
+  }
+
+  const products = await Product.find(filter);
+  res.status(200).json({
+    status: 'success',
+    results: products.length,
+    data: {
+      products
+    }
+  });
+});
 
 // Get a single product by ID
-exports.getProductById = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    res.status(200).json(product);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+exports.getProductById = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) {
+    return next(new AppError('Invalid product ID', 400));
   }
-};
+
+  const product = await Product.findById(id);
+  if (!product) {
+    return next(new AppError('Product not found', 404));
+  }
+
+  res.status(200).json(product);
+});
 
 // Update a product by ID
-exports.updateProduct = async (req, res) => {
-  try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    res.status(200).json(product);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+exports.updateProduct = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) {
+    return next(new AppError('Invalid product ID', 400));
   }
-};
+
+  try {
+    // Build the update object from req.body
+    const updateObject = {};
+    for (const key in req.body) {
+      if (key === 'category') {
+        // Assuming 'category' can be either ObjectId or category title
+        const category = await Category.findOne({ title: req.body[key] });
+        if (category) {
+          updateObject.category = category._id; // Update with the category ObjectId
+        } else {
+          // Handle case where category title doesn't exist
+          return next(new AppError('Category not found', 404));
+        }
+      } else {
+        updateObject[key] = req.body[key]; // Directly update other fields
+      }
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateObject, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedProduct) {
+      return next(new AppError('Product not found', 404));
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        product: updatedProduct,
+      },
+    });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+});
+// Update the main photo of a product by ID
+exports.updateProductMainPhoto = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) {
+    return next(new AppError('Invalid product ID', 400));
+  }
+
+  try {
+    // Find the product by ID
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new AppError('Product not found', 404));
+    }
+
+    // Delete the old main photo from Cloudinary
+    if (product.mainPhoto) {
+      const mainPhotoPublicId = product.mainPhoto.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
+      await cloudinary.uploader.destroy(`products/${mainPhotoPublicId}`);
+    }
+
+    // Upload new main photo to Cloudinary
+    const slug = product.slug; // Assuming you have a 'slug' field in your Product model
+    const mainPhotoResult = await cloudinary.uploader.upload(req.file.path, {
+      public_id: `products/${slug}-${Date.now()}-main-photo`, // Ensure unique public_id
+      overwrite: false, // Do not overwrite existing file
+      tags: ['main_photo'] // Optional tags for organizing in Cloudinary
+    });
+
+    // Update the main photo URL in the product
+    product.mainPhoto = mainPhotoResult.secure_url;
+    await product.save();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Main photo updated successfully',
+      data: {
+        product
+      }
+    });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+});
 
 // Delete a product by ID
-exports.deleteProduct = async (req, res) => {
-  try {
-    const product = await Product.findByIdAndDelete(req.params.id);
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    res.status(200).json({ message: 'Product deleted' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+exports.deleteProduct = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  if (!isValidObjectId(id)) {
+    return next(new AppError('Invalid product ID', 400));
   }
-};
+
+  try {
+    // Find the product by ID
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new AppError('Product not found', 404));
+    }
+
+    // Delete main photo from Cloudinary if exists
+    if (product.mainPhoto) {
+      const mainPhotoPublicId = product.mainPhoto.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
+      await cloudinary.uploader.destroy(`products/${mainPhotoPublicId}`);
+    }
+
+    // Delete additional photos from Cloudinary if exist
+    if (product.photos.length > 0) {
+      for (const photoUrl of product.photos) {
+        const photoPublicId = photoUrl.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
+        await cloudinary.uploader.destroy(`products/${photoPublicId}`);
+      }
+    }
+
+    // Delete the product from the database
+    await product.deleteOne();
+
+    res.status(200).json({ message: 'Product deleted' });
+  } catch (error) {
+    return next(new AppError(error.message, 500));
+  }
+});
