@@ -14,6 +14,8 @@ const Address = require('./routes/addressRoutes');
 const ProductCategory = require('./routes/productCategoryRoutes');
 const Product = require('./routes/productRoutes');
 const MaintenanceRequest = require('./routes/maintenanceRequestRoutes');
+const Notifications = require('./routes/notificationRoutes');
+const Devices = require('./routes/deviceRoutes');
 
 const app = express();
 
@@ -34,6 +36,8 @@ app.use('/api/addresses', Address);
 app.use('/api/product-categories', ProductCategory);
 app.use('/api/products', Product);
 app.use('/api/maintenance-requests', MaintenanceRequest);
+app.use('/api/devices', Devices);
+app.use('/api/notifications', Notifications);
 
 const PORT = process.env.PORT || 3000;
 

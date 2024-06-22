@@ -6,6 +6,7 @@ const sendNotification = async (token, message) => {
       title: message.title,
       body: message.body,
     },
+    data: message.data || {}
   };
 
   try {

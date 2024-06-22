@@ -61,6 +61,9 @@ const UserSchema = new mongoose.Schema({
       ref: 'Address'
     }
   ],
+  deviceToken: {
+    type: String,  // Ensure this field is present
+  },
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
