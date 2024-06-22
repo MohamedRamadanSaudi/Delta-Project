@@ -6,9 +6,10 @@ const maintenanceRequestSchema = new mongoose.Schema({
     enum: ['normal', 'urgent'],
     required: true
   },
-  title: {
-    type: String,
-    required: [true, 'A maintenance request must have a title']
+  address: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Address',
+    required: [true, 'A maintenance request must have an address']
   },
   description: {
     type: String,

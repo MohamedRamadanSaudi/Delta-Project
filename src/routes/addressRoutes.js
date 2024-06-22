@@ -6,9 +6,10 @@ const router = express.Router();
 
 router.use(auth.auth);
 
-router.post('/', addressController.createAddress);
-router.get('/', addressController.getAddresses);
-router.patch('/:id', addressController.updateAddress);
-router.delete('/:id', addressController.deleteAddress);
+router.post('/', auth.auth, addressController.createAddress);
+router.get('/', auth.auth, addressController.getAddresses);
+router.get('/:id', auth.auth, addressController.getAddress);
+router.patch('/:id', auth.auth, addressController.updateAddress);
+router.delete('/:id', auth.auth, addressController.deleteAddress);
 
 module.exports = router;

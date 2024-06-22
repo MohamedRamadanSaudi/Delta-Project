@@ -37,6 +37,7 @@ exports.createAddress = catchAsync(async (req, res, next) => {
   });
 });
 
+
 exports.getAddresses = catchAsync(async (req, res, next) => {
   const addresses = await Address.find({ user: req.user._id });
 
@@ -44,6 +45,21 @@ exports.getAddresses = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       addresses
+    }
+  });
+});
+
+exports.getAddress = catchAsync(async (req, res, next) => {
+  const address = await Address.findById(req.params.id);
+
+  if (!address) {
+    return next(new AppError('No address found with that ID', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      address
     }
   });
 });

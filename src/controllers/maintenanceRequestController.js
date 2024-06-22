@@ -6,10 +6,8 @@ const AppError = require('../utils/appError');
 
 // Create a maintenance request
 exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
-    const { type, title, description, date, time } = req.body;
+    const { type, address, description, date, time } = req.body;
     const { _id: userId } = req.user;
-    
-    console.log(type, title, description, date, time, userId);
 
     try {
       // Check if the user already has an active request
@@ -25,7 +23,7 @@ exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
       // Create new maintenance request
       const newRequest = await MaintenanceRequest.create({
         type,
-        title,
+        address,
         description,
         date,
         time,
@@ -45,7 +43,7 @@ exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
 
 // Get all normal maintenance requests
 exports.getAllNormalRequests = catchAsync(async (req, res, next) => {
-  const normalRequests = await MaintenanceRequest.find({ type: 'normal' }).populate('user');
+  const normalRequests = await MaintenanceRequest.find({ type: 'normal' }).populate('user').populate('address');
 
   res.status(200).json({
     status: 'success',
@@ -58,7 +56,7 @@ exports.getAllNormalRequests = catchAsync(async (req, res, next) => {
 
 // Get all urgent maintenance requests
 exports.getAllUrgentRequests = catchAsync(async (req, res, next) => {
-  const urgentRequests = await MaintenanceRequest.find({ type: 'urgent' }).populate('user');
+  const urgentRequests = await MaintenanceRequest.find({ type: 'urgent' }).populate('user').populate('address');
 
   res.status(200).json({
     status: 'success',
@@ -72,7 +70,7 @@ exports.getAllUrgentRequests = catchAsync(async (req, res, next) => {
 // Get a single maintenance request by ID
 exports.getMaintenanceRequestById = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const request = await MaintenanceRequest.findById(id).populate('user');
+  const request = await MaintenanceRequest.findById(id).populate('user').populate('address');
 
   if (!request) {
     return next(new AppError('Maintenance request not found', 404));

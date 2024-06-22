@@ -17,7 +17,7 @@ router.get('/', auth.auth,auth.isAdmin, User.getAllUsers);
 router.get('/me', auth.auth, User.getCurrentUser);
 router.get('/:id', auth.auth,auth.isAdmin, User.getUser);
 
-router.patch('/resetPassword/:token', authController.resetPassword);
+router.patch('/resetPassword', authController.resetPassword);
 router.patch('/updateMyPassword', auth.auth, authController.updatePassword);
 router.patch('/updateMe', auth.auth, User.updateMe); 
 router.patch('/:id', auth.auth, User.updateUser);
