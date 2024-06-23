@@ -16,6 +16,7 @@ const Product = require('./routes/productRoutes');
 const MaintenanceRequest = require('./routes/maintenanceRequestRoutes');
 const Notifications = require('./routes/notificationRoutes');
 const Devices = require('./routes/deviceRoutes');
+const Cart = require('./routes/cartRoutes');
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use('/api/products', Product);
 app.use('/api/maintenance-requests', MaintenanceRequest);
 app.use('/api/devices', Devices);
 app.use('/api/notifications', Notifications);
+app.use('/api/carts', Cart);
 
 const PORT = process.env.PORT || 3000;
 
