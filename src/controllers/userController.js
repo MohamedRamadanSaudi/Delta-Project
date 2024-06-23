@@ -9,7 +9,7 @@ function isValidObjectId(id) {
 }
 
 exports.getCurrentUser = catchAsync(async (req, res, next) => {
-  const user = await User.findById(req.user._id).populate('addresses');
+  const user = await User.findById(req.user._id).populate('addresses').populate('cart');
 
   if (!user) {
     return next(new AppError('No user found', 404));
@@ -42,7 +42,7 @@ exports.getUser = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid user ID', 400));
   }
 
-  const user = await User.findById(id).populate('addresses');
+  const user = await User.findById(id).populate('addresses').populate('cart');
 
   if (!user) {
     return next(new AppError('No user found with that ID', 404));

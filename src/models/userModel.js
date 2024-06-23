@@ -64,6 +64,10 @@ const UserSchema = new mongoose.Schema({
   deviceToken: {
     type: String,
   },
+  cart: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Cart'
+  },
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
