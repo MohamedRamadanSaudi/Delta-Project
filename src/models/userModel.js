@@ -62,7 +62,7 @@ const UserSchema = new mongoose.Schema({
     }
   ],
   deviceToken: {
-    type: String,  // Ensure this field is present
+    type: String,
   },
   passwordChangedAt: Date,
   passwordResetToken: String,

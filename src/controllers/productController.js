@@ -158,7 +158,19 @@ exports.getProductById = catchAsync(async (req, res, next) => {
     return next(new AppError('Product not found', 404));
   }
 
-  res.status(200).json(product);
+  // Fetch 3 random products from the database
+  const relatedProducts = await Product.aggregate([
+    { $match: { _id: { $ne: product._id } } }, // Exclude the current product
+    { $sample: { size: 3 } } // Get 3 random products
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      product,
+      relatedProducts
+    }
+  });
 });
 
 // Update a product by ID
