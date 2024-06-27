@@ -6,6 +6,8 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const morgan = require("morgan");
 const connectDB = require('./config/database');
+const AppError = require('./utils/appError');
+const errorHandler = require('./middlewares/errorHandler');
 
 const User = require('./routes/userRoutes');
 const Otp = require('./routes/otpRoutes');
@@ -44,6 +46,14 @@ app.use('/api/notifications', Notifications);
 app.use('/api/carts', Cart);
 app.use('/api/orders', Order);
 // app.use('/api/pdf', PDF);
+
+// Catch-all route handler for undefined routes
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+// Global error handling middleware
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 

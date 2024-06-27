@@ -42,7 +42,11 @@ exports.createProduct = catchAsync(async (req, res, next) => {
       const mainPhotoResult = await cloudinary.uploader.upload(req.file.path, {
         public_id: `products/${slug}-${Date.now()}-main-photo`, // Ensure unique public_id
         overwrite: false, // Do not overwrite existing file
-        tags: ['main_photo'] // Optional tags for organizing in Cloudinary
+        tags: ['main_photo'], // Optional tags for organizing in Cloudinary
+        transformation: [
+          { width: 390, height: 250, crop: 'fill' },
+          { quality: 90 }
+        ]
       });
       const mainPhoto = mainPhotoResult.secure_url;
 
@@ -93,7 +97,11 @@ exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
         const photoResult = await cloudinary.uploader.upload(file.path, {
           public_id: `products/${slug}-${existingPhotosCount + i}-${uniqueIdentifier}`, // Ensure unique public_id
           overwrite: false, // Do not overwrite existing file
-          tags: ['product_photo'] // Optional tags for organizing in Cloudinary
+          tags: ['product_photo'], // Optional tags for organizing in Cloudinary
+          transformation: [
+            { width: 390, height: 250, crop: 'fill' },
+            { quality: 90 }
+          ]
         });
 
         photos.push(photoResult.secure_url);
