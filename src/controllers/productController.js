@@ -37,7 +37,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
   const slug = slugify(name, { lower: true });
 
   if (req.file && req.file.path) {
-    try {
+    
       // Upload main photo to Cloudinary
       const mainPhotoResult = await cloudinary.uploader.upload(req.file.path, {
         public_id: `products/${slug}-${Date.now()}-main-photo`, // Ensure unique public_id
@@ -58,9 +58,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 
       await newProduct.save();
       res.status(201).json(newProduct);
-    } catch (error) {
-      return next(new AppError('Failed to upload main photo', 500));
-    }
+    
   } else {
     return next(new AppError('Main photo is required', 400));
   }
@@ -75,7 +73,7 @@ exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  try {
+  
     // Find the product by ID
     const product = await Product.findById(id);
     if (!product) {
@@ -115,9 +113,7 @@ exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
     } else {
       return next(new AppError('No photos were uploaded', 400));
     }
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+  
 });
 
 // Get all products, optionally filtered by category
@@ -158,10 +154,10 @@ exports.getProductById = catchAsync(async (req, res, next) => {
     return next(new AppError('Product not found', 404));
   }
 
-  // Fetch 3 random products from the database
+  // Fetch up to 5 related products from the same category
   const relatedProducts = await Product.aggregate([
-    { $match: { _id: { $ne: product._id } } }, // Exclude the current product
-    { $sample: { size: 3 } } // Get 3 random products
+    { $match: { _id: { $ne: product._id }, category: product.category } }, // Exclude the current product and match the same category
+    { $sample: { size: 5 } } // Get up to 5 random products
   ]);
 
   res.status(200).json({
@@ -180,7 +176,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  try {
+  
     // Build the update object from req.body
     const updateObject = {};
     for (const key in req.body) {
@@ -213,9 +209,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
         product: updatedProduct,
       },
     });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+  
 });
 // Update the main photo of a product by ID
 exports.updateProductMainPhoto = catchAsync(async (req, res, next) => {
@@ -224,7 +218,7 @@ exports.updateProductMainPhoto = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  try {
+  
     // Find the product by ID
     const product = await Product.findById(id);
     if (!product) {
@@ -256,9 +250,7 @@ exports.updateProductMainPhoto = catchAsync(async (req, res, next) => {
         product
       }
     });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+  
 });
 
 // Delete a product by ID
@@ -268,7 +260,7 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  try {
+  
     // Find the product by ID
     const product = await Product.findById(id);
     if (!product) {
@@ -293,7 +285,5 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
     await product.deleteOne();
 
     res.status(200).json({ message: 'Product deleted' });
-  } catch (error) {
-    return next(new AppError(error.message, 500));
-  }
+  
 });

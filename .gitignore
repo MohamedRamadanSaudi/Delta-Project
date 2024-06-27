@@ -3,3 +3,4 @@ node_modules/
 # Firebase service account key
 /src/config/firebaseServiceAccount.json
 googleDriveServiceAccount.json
+encodeFile.js

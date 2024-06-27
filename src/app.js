@@ -18,7 +18,7 @@ const Notifications = require('./routes/notificationRoutes');
 const Devices = require('./routes/deviceRoutes');
 const Cart = require('./routes/cartRoutes');
 const Order = require('./routes/orderRoutes');
-const PDF = require('./routes/pdfRoutes');
+// const PDF = require('./routes/pdfRoutes');
 
 const app = express();
 
@@ -43,7 +43,7 @@ app.use('/api/devices', Devices);
 app.use('/api/notifications', Notifications);
 app.use('/api/carts', Cart);
 app.use('/api/orders', Order);
-app.use('/api/pdf', PDF);
+// app.use('/api/pdf', PDF);
 
 const PORT = process.env.PORT || 3000;
 
