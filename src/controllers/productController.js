@@ -140,12 +140,21 @@ exports.getProducts = catchAsync(async (req, res, next) => {
     filter.category = category._id;
   }
 
-  const products = await Product.find(filter);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
+
+  const products = await Product.find(filter).skip(skip).limit(limit);
+  const total = await Product.countDocuments(filter);
+
   res.status(200).json({
     status: 'success',
     results: products.length,
     data: {
-      products
+      products,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page
     }
   });
 });
