@@ -205,7 +205,7 @@ exports.forgotPassword = catchAsync(async function (req, res, next) {
   await user.save({ validateBeforeSave: false });
 
   // Send OTP to email
-  const message = `Your password reset token is: \n\n ${otp}. It is valid for 2 minutes. \n\n If you have not requested this, please ignore this email.`;
+  const message = `Your OTP code for Password Reset is: \n\n ${otp} \n\n It is valid for 2 minutes. \n\n If you have not requested this, please ignore this email.`;
 
   try {
     console.log('Sending OTP email to:', user.email);
