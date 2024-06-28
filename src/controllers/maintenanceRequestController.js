@@ -56,28 +56,52 @@ const enhanceRequestsWithOrderInfo = async (requests) => {
 
 // Get all normal maintenance requests
 exports.getAllNormalRequests = catchAsync(async (req, res, next) => {
-  const normalRequests = await MaintenanceRequest.find({ type: 'normal' }).populate('user').populate('address');
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
+
+  const normalRequests = await MaintenanceRequest.find({ type: 'normal' })
+    .populate('user')
+    .populate('address')
+    .skip(skip)
+    .limit(limit);
   const enhancedRequests = await enhanceRequestsWithOrderInfo(normalRequests);
+  const total = await MaintenanceRequest.countDocuments({ type: 'normal' });
 
   res.status(200).json({
     status: 'success',
     results: enhancedRequests.length,
     data: {
-      requests: enhancedRequests
+      requests: enhancedRequests,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page
     }
   });
 });
 
 // Get all urgent maintenance requests
 exports.getAllUrgentRequests = catchAsync(async (req, res, next) => {
-  const urgentRequests = await MaintenanceRequest.find({ type: 'urgent' }).populate('user').populate('address');
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
+
+  const urgentRequests = await MaintenanceRequest.find({ type: 'urgent' })
+    .populate('user')
+    .populate('address')
+    .skip(skip)
+    .limit(limit);
   const enhancedRequests = await enhanceRequestsWithOrderInfo(urgentRequests);
+  const total = await MaintenanceRequest.countDocuments({ type: 'urgent' });
 
   res.status(200).json({
     status: 'success',
     results: enhancedRequests.length,
     data: {
-      requests: enhancedRequests
+      requests: enhancedRequests,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page
     }
   });
 });

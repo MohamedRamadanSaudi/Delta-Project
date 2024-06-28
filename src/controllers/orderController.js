@@ -55,15 +55,28 @@ exports.getUserOrders = catchAsync(async (req, res, next) => {
 
 // Get all orders (admin)
 exports.getAllOrders = catchAsync(async (req, res, next) => {
-  const orders = await Order.find().populate('user').populate('address').populate({
-    path: 'cartItems.product'
-  });
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
+
+  const orders = await Order.find()
+    .populate('user')
+    .populate('address')
+    .populate({
+      path: 'cartItems.product'
+    })
+    .skip(skip)
+    .limit(limit);
+  const total = await Order.countDocuments();
 
   res.status(200).json({
     status: 'success',
     results: orders.length,
     data: {
-      orders
+      orders,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page
     }
   });
 });

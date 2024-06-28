@@ -58,8 +58,23 @@ const getCategory = catchAsync(async (req, res, next) => {
 
 // Get All Categories
 const getAllCategories = catchAsync(async (req, res, next) => {
-  const categories = await ProductCategory.find();
-  res.json(categories);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
+
+  const categories = await ProductCategory.find().skip(skip).limit(limit);
+  const total = await ProductCategory.countDocuments();
+
+  res.status(200).json({
+    status: 'success',
+    results: categories.length,
+    data: {
+      categories,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page
+    }
+  });
 });
 
 module.exports = {

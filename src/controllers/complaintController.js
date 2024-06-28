@@ -20,13 +20,21 @@ exports.createComplaint = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllComplaints = catchAsync(async (req, res, next) => {
-  const complaints = await Complaint.find();
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
+
+  const complaints = await Complaint.find().skip(skip).limit(limit);
+  const total = await Complaint.countDocuments();
 
   res.status(200).json({
     status: 'success',
     results: complaints.length,
     data: {
-      complaints
+      complaints,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page
     }
   });
 });

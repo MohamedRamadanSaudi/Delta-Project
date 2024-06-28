@@ -24,13 +24,21 @@ exports.getCurrentUser = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find().populate('addresses');
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
+
+  const users = await User.find().populate('addresses').skip(skip).limit(limit);
+  const total = await User.countDocuments();
 
   res.status(200).json({
     status: 'success',
     results: users.length,
     data: {
-      users
+      users,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page
     }
   });
 });
