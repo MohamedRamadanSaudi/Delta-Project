@@ -1,6 +1,6 @@
 const express = require('express');
 const pdfController = require('../controllers/pdfController');
-const auth = require('../middlewares/authMiddleware');
+const auth = require('../middlewares/AuthMiddleware');
 
 const router = express.Router();
 
