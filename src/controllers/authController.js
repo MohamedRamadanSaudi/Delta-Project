@@ -91,6 +91,7 @@ exports.setPasswordAfterOTP = catchAsync(async (req, res, next) => {
 
   user.password = password;
   user.confirm_password = confirm_password;
+  user.isPasswordSet = true;
 
   await user.save();
 
@@ -104,8 +105,16 @@ exports.login = catchAsync(async function (req, res, next) {
   if (!phone || !password) {
     return next(new AppError('Please provide phone and password!', 400));
   }
-  // 2) Check if user exists && password is correct
+  // 2) Check if user exists && verified && password has been set && password is correct
   const user = await User.findOne({ phone: phone  }).select('+password');
+
+  if (!user.isVerified) {
+    return next(new AppError('Your account is not verified. Please verify your account to log in.', 403));
+  }
+
+  if (!user.isPasswordSet) {
+    return next(new AppError('You have not set a password. Please set a password to log in.', 403));
+  }
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect phone or password', 401));

@@ -48,6 +48,7 @@ exports.verifyOTP = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid OTP', 400));
   }
 
+  user.isVerified = true;
   user.otp = undefined;
   user.otpExpires = undefined;
   await user.save({ validateBeforeSave: false });
