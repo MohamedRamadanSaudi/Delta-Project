@@ -64,16 +64,6 @@ exports.getUser = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createUser = catchAsync(async (req, res, next) => {
-  const newUser = await User.create(req.body);
-
-  res.status(201).json({
-    status: 'success',
-    data: {
-      user: newUser
-    }
-  });
-});
 
 exports.updateUser = catchAsync(async (req, res, next) => {
   const id = req.params.id;
@@ -110,6 +100,10 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
 
   if (!user) {
     return next(new AppError('No user found with that ID', 404));
+  }
+
+  if (user.role === 'admin') {
+    return next(new AppError('You cannot delete an admin user', 400));
   }
 
   res.status(200).json({
@@ -163,6 +157,10 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 
   if (!user) {
     return next(new AppError('No user found with that ID', 404));
+  }
+
+  if (user.role === 'admin') {
+    return next(new AppError('You cannot delete an admin user', 400));
   }
 
   res.status(204).json({

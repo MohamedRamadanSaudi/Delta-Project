@@ -5,7 +5,6 @@ const User = require('../controllers/userController');
 const authController = require('../controllers/authController');
 const auth = require('../middlewares/AuthMiddleware');
 
-router.post('/create', auth.auth,auth.isAdmin, User.createUser);
 router.post('/signup', authController.signup);
 router.post('/set-password', authController.setPasswordAfterOTP);
 router.post('/login', authController.login);
