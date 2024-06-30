@@ -1,10 +1,10 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const Blacklist = require('../models/blacklistModel');
 const catchAsync = require('./../utils/catchAsync.js');
 const AppError = require('../utils/appError.js');
 const sendEmail = require('./../utils/email.js');
+const path = require('path');
 require('dotenv').config();
 
 function signToken(id) {
@@ -40,6 +40,13 @@ exports.signup = catchAsync(async function (req, res, next) {
   // Validate input fields
   if (!name || !email || !phone) {
     return next(new AppError('Please provide all required fields', 400));
+  }
+
+  // Check if user already exists
+  const user = await User.findOne({ email });
+  
+  if (user) {
+    return next(new AppError('User already exists', 400));
   }
 
   // Create user
@@ -133,57 +140,15 @@ exports.adminLogin = catchAsync(async function (req, res, next) {
 });
 
 
-exports.logout = catchAsync(async (req, res) => {
-  const token = req.cookies.jwt;
-
-  if (!token) {
-    return res.status(400).json({ message: 'No Token Provided' });
-  }
-
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  const expiresAt = new Date(decoded.exp * 1000);
-
-  await Blacklist.create({ token, expiresAt });
-
-  res.clearCookie('jwt', {
+exports.logout = (req, res) => {
+  res.cookie('jwt', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000), // Token expires in 10 seconds
     httpOnly: true,
-    secure: true,
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+    path: '/'
   });
-
-  res.sendStatus(204); // No Content
-});
-
-
-exports.isLoggedIn = catchAsync(async function (req, res, next) {
-  if (req.cookies.jwt) {
-    try {
-      const token = req.cookies.jwt;
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      // Check if the token is blacklisted
-      const blacklistedToken = await Blacklist.findOne({ token });
-      if (blacklistedToken) {
-        return next(new AppError('Token is blacklisted', 401));
-      }
-
-      const currentUser = await User.findById(decoded.id);
-      if (!currentUser) {
-        return next();
-      }
-
-      if (currentUser.changedPasswordAfter(decoded.iat)) {
-        return next();
-      }
-
-      req.user = currentUser;
-      res.locals.user = currentUser;
-      return next();
-    } catch (err) {
-      return next();
-    }
-  }
-  next();
-});
+  res.status(200).json({ status: 'success' });
+};
 
 exports.restrictTo = function (...roles) {
   return (req, res, next) => {

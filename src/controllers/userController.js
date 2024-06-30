@@ -96,7 +96,7 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid user ID', 400));
   }
 
-  const user = await User.findByIdAndDelete(id);
+  const user = await User.findById(id);
 
   if (!user) {
     return next(new AppError('No user found with that ID', 404));
@@ -105,6 +105,8 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   if (user.role === 'admin') {
     return next(new AppError('You cannot delete an admin user', 400));
   }
+
+  await user.remove();
 
   res.status(200).json({
     status: 'success',
