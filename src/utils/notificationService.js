@@ -10,7 +10,7 @@ const sendNotification = async (token, message) => {
   };
 
   try {
-    await admin.messaging().sendToDevice(token, payload);
+    await admin.messaging().send(token, payload);
     console.log('Notification sent successfully');
   } catch (error) {
     console.error('Error sending notification:', error);
