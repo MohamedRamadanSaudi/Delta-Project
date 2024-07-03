@@ -10,21 +10,32 @@ const isValidObjectId = (id) => {
 
 // Create Category
 const createCategory = catchAsync(async (req, res, next) => {
-  const newCategory = await ProductCategory.create(req.body);
+  const { title, subCategories } = req.body;
+
+  const newCategory = new ProductCategory({
+    title,
+    subCategories,
+  });
+
+  await newCategory.save();
   res.status(201).json(newCategory);
 });
 
 // Update Category
 const updateCategory = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  const { title, subCategories } = req.body;
+
   if (!isValidObjectId(id)) {
     return next(new AppError('Invalid category ID', 400));
   }
 
-  const updatedCategory = await ProductCategory.findByIdAndUpdate(id, req.body, { new: true });
+  const updatedCategory = await ProductCategory.findByIdAndUpdate(id, { title, subCategories }, { new: true });
+
   if (!updatedCategory) {
     return next(new AppError('Category not found', 404));
   }
+
   res.json(updatedCategory);
 });
 
