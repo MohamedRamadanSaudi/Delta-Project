@@ -106,7 +106,7 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
     return next(new AppError('You cannot delete an admin user', 400));
   }
 
-  await user.remove();
+  await User.deleteOne({ _id: id });
 
   res.status(200).json({
     status: 'success',
