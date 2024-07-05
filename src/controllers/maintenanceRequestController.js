@@ -41,6 +41,15 @@ exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
 const enhanceRequestsWithOrderInfo = async (requests) => {
   return await Promise.all(
     requests.map(async (request) => {
+      // Handle cases where request.user is null
+      if (!request.user) {
+        return {
+          ...request.toObject(),
+          userHasCompletedOrder: false,
+          userHasOrder: false
+        };
+      }
+
       const userOrders = await Order.find({ user: request.user._id });
       const hasCompletedOrder = userOrders.some(order => order.status === 'Completed');
       const hasAnyOrder = userOrders.length > 0;
