@@ -43,10 +43,29 @@ const getNotifications = async (req, res) => {
       return res.status(404).send({ message: 'No notifications found' });
     }
 
-    res.status(200).send(messages);
+    res.status(200).send({
+      result: messages.length,
+      data: messages
+    });
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
 };
 
-module.exports = { sendCustomNotification, getNotifications };
+// Function to delete a notification by its ID
+const deleteNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await Message.findByIdAndDelete(id);
+
+    if (!result) {
+      return res.status(404).send({ message: 'Notification not found' });
+    }
+
+    res.status(200).send({ message: 'Notification deleted successfully' });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+module.exports = { sendCustomNotification, getNotifications, deleteNotification };
