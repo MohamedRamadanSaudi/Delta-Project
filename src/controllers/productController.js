@@ -143,12 +143,9 @@ exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
 // Get all products, optionally filtered by category
 exports.getProducts = catchAsync(async (req, res, next) => {
   let filter = {};
-  if (req.query.categoryId) {
-    filter.category = req.query.categoryId;
-  }
 
-  // If categoryName is provided, filter by category name
-  if (req.query.category) {
+  // If categoryName is provided and it's not "All", filter by category name
+  if (req.query.category && req.query.category.toLowerCase() !== 'all') {
     const category = await Category.findOne({ title: req.query.category });
     if (!category) {
       return next(new AppError('Category not found', 404));
@@ -159,6 +156,11 @@ exports.getProducts = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 5;
   const skip = (page - 1) * limit;
+
+  // If categoryName is provided and it's "All", do not apply category filter
+  if (req.query.category && req.query.category.toLowerCase() === 'all') {
+    filter = {}; // Clear the filter to fetch all products
+  }
 
   const products = await Product.find(filter).skip(skip).limit(limit);
   const total = await Product.countDocuments(filter);
