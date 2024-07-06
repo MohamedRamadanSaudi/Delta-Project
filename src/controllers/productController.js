@@ -162,7 +162,7 @@ exports.getProducts = catchAsync(async (req, res, next) => {
     filter = {}; // Clear the filter to fetch all products
   }
 
-  const products = await Product.find(filter).skip(skip).limit(limit);
+  const products = await Product.find(filter).populate('category').skip(skip).limit(limit);
   const total = await Product.countDocuments(filter);
 
   res.status(200).json({
@@ -184,7 +184,7 @@ exports.getProductById = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  const product = await Product.findById(id);
+  const product = await Product.findById(id).populate('category');
   if (!product) {
     return next(new AppError('Product not found', 404));
   }
