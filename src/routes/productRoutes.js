@@ -15,6 +15,9 @@ router.post('/:id/main-photo', productController.uploadProductMainPhoto, product
 // Get all products, optionally filtered by category
 router.get('/', auth.auth, productController.getProducts);
 
+// Search products by name
+router.get('/search', auth.auth, productController.searchProductsByName);
+
 // Get a single product by ID
 router.get('/:id', auth.auth, productController.getProductById);
 

@@ -322,3 +322,26 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Product deleted' });
   
 });
+
+// Search products by name
+exports.searchProductsByName = catchAsync(async (req, res, next) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return next(new AppError('Product name is required to search', 400));
+  }
+
+  const products = await Product.find({ name: { $regex: name, $options: 'i' } }).populate('category');
+
+  if (products.length === 0) {
+    return next(new AppError('No products found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    results: products.length,
+    data: {
+      products,
+    },
+  });
+});
