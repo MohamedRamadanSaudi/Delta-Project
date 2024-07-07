@@ -323,25 +323,33 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
   
 });
 
-// Search products by name
+// Search products by name with pagination
 exports.searchProductsByName = catchAsync(async (req, res, next) => {
   const { name } = req.query;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
 
+  // Validate name query parameter
   if (!name) {
-    return next(new AppError('Product name is required to search', 400));
+    return next(new AppError('Product name is required', 400));
   }
 
-  const products = await Product.find({ name: { $regex: name, $options: 'i' } }).populate('category');
+  const products = await Product.find({ name: { $regex: name, $options: 'i' } })
+    .skip(skip)
+    .limit(limit)
+    .populate('category');
 
-  if (products.length === 0) {
-    return next(new AppError('No products found', 404));
-  }
+  const total = await Product.countDocuments({ name: { $regex: name, $options: 'i' } });
 
   res.status(200).json({
     status: 'success',
     results: products.length,
     data: {
       products,
-    },
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page
+    }
   });
 });
