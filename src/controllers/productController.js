@@ -100,13 +100,23 @@ exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
       return next(new AppError('Product not found', 404));
     }
 
+    // Check the number of existing photos
+    const existingPhotosCount = product.photos.length;
+
+    if (existingPhotosCount >= 5) {
+      return next(new AppError('Product already has the maximum number of photos', 400));
+    }
+
+    // Determine the number of photos that can be uploaded
+    const maxUploads = 5 - existingPhotosCount;
+    const filesToUpload = req.files.slice(0, maxUploads);
+
     // Upload additional photos to Cloudinary
     const photos = [];
-    if (req.files && req.files.length > 0) {
+    if (filesToUpload && filesToUpload.length > 0) {
       const slug = product.slug; // Assuming you have a 'slug' field in your Product model
-      const existingPhotosCount = product.photos.length; // Get the current number of photos
 
-      for (let i = 0; i < req.files.length; i++) {
+      for (let i = 0; i < filesToUpload.length; i++) {
         const file = req.files[i];
         const uniqueIdentifier = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
 
