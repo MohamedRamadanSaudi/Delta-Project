@@ -16,6 +16,9 @@ router.get('/urgent', auth.auth, auth.isAdmin, maintenanceRequestController.getA
 // Get a maintenance request by ID
 router.get('/:id', auth.auth, auth.isAdmin, maintenanceRequestController.getMaintenanceRequestById);
 
+// Update a maintenance request by ID
+router.patch('/:id', auth.auth, auth.isAdmin, maintenanceRequestController.updateMaintenanceStatus);
+
 // Delete a maintenance request by ID
 router.delete('/:id', auth.auth, auth.isAdmin, maintenanceRequestController.deleteMaintenanceRequest);
 

@@ -132,6 +132,25 @@ exports.getMaintenanceRequestById = catchAsync(async (req, res, next) => {
   });
 });
 
+// Update maintenance status
+exports.updateMaintenanceStatus = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const request = await MaintenanceRequest.findByIdAndUpdate(id, { status }, { new: true });
+
+  if (!request) {
+    return next(new AppError('Maintenance request not found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      request
+    }
+  });
+});
+
 // Delete a maintenance request by ID
 exports.deleteMaintenanceRequest = catchAsync(async (req, res, next) => {
   const { id } = req.params;
