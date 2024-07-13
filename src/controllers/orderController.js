@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Order = require('../models/orderModel');
+const Address = require('../models/addressModel');
 const Cart = require('../models/cartModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -108,7 +109,7 @@ exports.getOrderById = catchAsync(async (req, res, next) => {
   });
 });
 
-// Update order (admin)
+// Update order (admin) // 
 exports.updateOrder = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const updates = req.body;
@@ -116,11 +117,28 @@ exports.updateOrder = catchAsync(async (req, res, next) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return next(new AppError('Invalid order ID', 400));
   }
+  
+  // Check if address is included in the updates and handle it separately
+  if (updates.address) {
+    const addressId = updates.address._id;
+    if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      return next(new AppError('Invalid address ID', 400));
+    }
+    // Assuming Address is a model for address documents
+    await Address.findByIdAndUpdate(addressId, updates.address, {
+      new: true,
+      runValidators: true
+    });
+    // Remove the address from the updates to avoid trying to update it on the Order model
+    delete updates.address;
+  }
 
   const order = await Order.findByIdAndUpdate(id, updates, {
     new: true,
     runValidators: true
-  }).populate('user').populate('address').populate({
+  }).populate('user').populate({
+    path: 'address'
+  }).populate({
     path: 'cartItems.product'
   });
 
