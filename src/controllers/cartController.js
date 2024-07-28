@@ -25,26 +25,37 @@ exports.addToCart = catchAsync(async (req, res, next) => {
   const { productId, quantity } = req.body;
   const { _id: userId } = req.user;
 
+  // Check if the product exists in the database
   const product = await Product.findById(productId);
   if (!product) {
     return next(new AppError('Product not found', 404));
   }
 
+  // Find the user's cart
   let cart = await Cart.findOne({ user: userId });
 
+  // If the cart doesn't exist, create a new cart for the user
   if (!cart) {
     cart = await Cart.create({ user: userId, items: [] });
   }
 
+  // Check if the product is already in the cart
   const itemIndex = cart.items.findIndex(item => item.product.equals(productId));
   if (itemIndex > -1) {
-    cart.items[itemIndex].quantity += quantity;
+    // If the product is already in the cart, return a message
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Product is already in the cart'
+    });
   } else {
+    // If the product is not in the cart, add it
     cart.items.push({ product: productId, quantity });
   }
 
+  // Save the cart
   await cart.save();
 
+  // Respond with the updated cart
   res.status(200).json({
     status: 'success',
     data: {
