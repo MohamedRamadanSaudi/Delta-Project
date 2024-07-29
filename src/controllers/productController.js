@@ -58,7 +58,6 @@ exports.createProduct = catchAsync(async (req, res, next) => {
         overwrite: false, // Do not overwrite existing file
         tags: ['main_photo'], // Optional tags for organizing in Cloudinary
         transformation: [
-          { width: 390, height: 250, crop: 'fill' },
           { quality: 90 }
         ]
       });
@@ -125,7 +124,6 @@ exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
           overwrite: false, // Do not overwrite existing file
           tags: ['product_photo'], // Optional tags for organizing in Cloudinary
           transformation: [
-            { width: 390, height: 250, crop: 'fill' },
             { quality: 90 }
           ]
         });
