@@ -21,13 +21,9 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide the flat number']
   },
-  latitude: {
-    type: Number,
-    required: [true, 'Please provide the latitude']
-  },
-  longitude: {
-    type: Number,
-    required: [true, 'Please provide the longitude']
+  locationLink: {
+    type: String,
+    required: [true, 'Please provide the location link']
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,

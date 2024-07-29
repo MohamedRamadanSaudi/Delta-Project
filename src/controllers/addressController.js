@@ -9,9 +9,9 @@ function isValidObjectId(id) {
 }
 
 exports.createAddress = catchAsync(async (req, res, next) => {
-  const { city, area, street, building, flat, latitude, longitude } = req.body;
+  const { city, area, street, building, flat, locationLink } = req.body;
 
-  if (!city || !area || !street || !building || !flat || !latitude || !longitude) {
+  if (!city || !area || !street || !building || !flat || !locationLink) {
     return next(new AppError('Please provide all address details', 400));
   }
 
@@ -21,8 +21,7 @@ exports.createAddress = catchAsync(async (req, res, next) => {
     street,
     building,
     flat,
-    latitude,
-    longitude,
+    locationLink,
     user: req.user._id
   });
 
@@ -36,7 +35,6 @@ exports.createAddress = catchAsync(async (req, res, next) => {
     }
   });
 });
-
 
 exports.getAddresses = catchAsync(async (req, res, next) => {
   const addresses = await Address.find({ user: req.user._id });
