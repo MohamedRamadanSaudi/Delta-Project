@@ -1,27 +1,16 @@
-const express = require("express");
+const express = require('express');
+const categoryController = require('../controllers/productCategoryController');
 const router = express.Router();
-const Category = require("../controllers/productCategoryController");
-const auth = require("../middlewares/AuthMiddleware");
 
-router.post(
-  "/",
-  auth.auth,
-  auth.isAdmin,
-  Category.createCategory
-);
-router.put(
-  "/:id",
-  auth.auth,
-  auth.isAdmin,
-  Category.updateCategory
-);
-router.delete(
-  "/:id",
-  auth.auth,
-  auth.isAdmin,
-  Category.deleteCategory
-);
-router.get("/:id", Category.getCategory);
-router.get("/", Category.getAllCategories);
+router
+  .route('/')
+  .post(categoryController.upload.single('photo'), categoryController.createCategory)
+  .get(categoryController.getAllCategories);
+
+router
+  .route('/:id')
+  .get(categoryController.getCategory)
+  .put(categoryController.upload.single('photo'), categoryController.updateCategory)
+  .delete(categoryController.deleteCategory);
 
 module.exports = router;

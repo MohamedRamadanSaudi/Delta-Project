@@ -2,15 +2,28 @@ const ProductCategory = require('../models/productCategoryModel');
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const cloudinary = require('../config/cloudinary');
+const multer = require('multer');
 
 // Utility function to validate MongoDB Object IDs
 const isValidObjectId = (id) => {
   return mongoose.Types.ObjectId.isValid(id);
 };
 
+// Middleware for handling file uploads
+const upload = multer({ dest: 'uploads/' });
+
 // Create Category
 const createCategory = catchAsync(async (req, res, next) => {
-  const { title, photo } = req.body;
+  const { title } = req.body;
+
+  let photo = '';
+  if (req.file && req.file.path) {
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'categories'
+    });
+    photo = result.secure_url;
+  }
 
   const newCategory = new ProductCategory({
     title,
@@ -24,13 +37,24 @@ const createCategory = catchAsync(async (req, res, next) => {
 // Update Category
 const updateCategory = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const { title, photo } = req.body;
+  const { title } = req.body;
 
   if (!isValidObjectId(id)) {
     return next(new AppError('Invalid category ID', 400));
   }
 
-  const updatedCategory = await ProductCategory.findByIdAndUpdate(id, { title, photo }, { new: true });
+  let photo = '';
+  if (req.file && req.file.path) {
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'categories'
+    });
+    photo = result.secure_url;
+  }
+
+  const updateData = { title };
+  if (photo) updateData.photo = photo;
+
+  const updatedCategory = await ProductCategory.findByIdAndUpdate(id, updateData, { new: true });
 
   if (!updatedCategory) {
     return next(new AppError('Category not found', 404));
@@ -94,4 +118,5 @@ module.exports = {
   deleteCategory,
   getCategory,
   getAllCategories,
+  upload
 };
