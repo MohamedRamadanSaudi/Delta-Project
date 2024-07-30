@@ -6,10 +6,6 @@ const productSchema = new mongoose.Schema({
     ref: 'ProductCategory',
     required: true
   },
-  subCategory: {
-    type: String,
-    required: false
-  },
   slug: {
     type: String,
     required: true,

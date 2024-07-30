@@ -20,7 +20,7 @@ exports.uploadProductPhotos = upload.array('photos', 5); // Allow up to 5 photos
 
 // Create a new product
 exports.createProduct = catchAsync(async (req, res, next) => {
-  const { category, subCategory, subSubCategory, name, description } = req.body;
+  const { category, name, description } = req.body;
 
   // Check if the category name is provided
   if (!category) {
@@ -31,20 +31,6 @@ exports.createProduct = catchAsync(async (req, res, next) => {
   const categoryExists = await Category.findOne({ title: category });
   if (!categoryExists) {
     return next(new AppError('Category not found', 404));
-  }
-
-  // Validate subCategory and subSubCategory if they are provided
-  if (subCategory) {
-    const subCategoryExists = categoryExists.subCategories.find(sc => sc.name === subCategory);
-    if (!subCategoryExists) {
-      return next(new AppError('SubCategory not found', 404));
-    }
-
-    if (subSubCategory) {
-      if (!subCategoryExists.subSubCategories.includes(subSubCategory)) {
-        return next(new AppError('SubSubCategory not found', 404));
-      }
-    }
   }
 
   // Create slug from product name
@@ -66,8 +52,6 @@ exports.createProduct = catchAsync(async (req, res, next) => {
       // Create a new product
       const newProduct = new Product({
         category: categoryExists._id,
-        subCategory,
-        subSubCategory,
         slug,
         name,
         description,

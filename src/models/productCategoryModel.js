@@ -1,15 +1,5 @@
 const mongoose = require("mongoose");
 
-const subCategorySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true
-  },
-  subCategories: [{
-    type: String
-  }]
-}, { _id: false });
-
 const productCategorySchema = new mongoose.Schema({
   title: {
     type: String,
@@ -17,7 +7,10 @@ const productCategorySchema = new mongoose.Schema({
     unique: true,
     index: true,
   },
-  subCategories: [subCategorySchema]
+  photo: {
+    type: String,
+    required: true,
+  }
 }, {
   timestamps: true,
 });
