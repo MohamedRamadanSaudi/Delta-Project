@@ -65,8 +65,8 @@ exports.signup = catchAsync(async function (req, res, next) {
 
   await sendEmail({
     email: email,
-    subject: 'Your OTP Code',
-    message: `Your OTP is ${otp}`,
+    subject: 'Your OTP Code for Account Verification at Delta',
+    message: `Your OTP code for Account Verification is: \n\n ${otp} \n\n It is valid for 2 minutes.`,
   });
 
   res.status(200).json({
