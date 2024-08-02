@@ -20,7 +20,7 @@ exports.sendOTP = catchAsync(async (req, res, next) => {
   await sendEmail({
     email: email,
     subject: 'Your OTP Code',
-    message: `Your OTP is ${otp}`,
+    message: `Your OTP is ${otp} and is valid for 2 minutes. If you have not requested this, please ignore this email.`,
   });
 
   res.status(200).json({
