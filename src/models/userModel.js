@@ -146,7 +146,7 @@ UserSchema.methods.createPasswordResetToken = function() {
 UserSchema.methods.generateOTP = function() {
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
   this.otp = crypto.createHash('sha256').update(otp).digest('hex');
-  this.otpExpires = Date.now() + 2 * 60 * 1000; // OTP expires in 2 minutes
+  this.otpExpires = Date.now() + 1 * 60 * 1000; // OTP expires in 1 minute
   return otp;
 };
 

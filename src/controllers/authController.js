@@ -66,7 +66,7 @@ exports.signup = catchAsync(async function (req, res, next) {
   await sendEmail({
     email: email,
     subject: 'Your OTP Code for Account Verification at Delta',
-    message: `Your OTP code for Account Verification is: \n\n ${otp} \n\n It is valid for 2 minutes.`,
+    message: `Your OTP code for Account Verification is: \n\n ${otp} \n\n It is valid for 1 minute.`,
   });
 
   res.status(200).json({
@@ -179,7 +179,7 @@ exports.forgotPassword = catchAsync(async function (req, res, next) {
   await user.save({ validateBeforeSave: false });
 
   // Send OTP to email
-  const message = `Your OTP code for Password Reset is: \n\n ${otp} \n\n It is valid for 2 minutes. \n\n If you have not requested this, please ignore this email.`;
+  const message = `Your OTP code for Password Reset is: \n\n ${otp} \n\n It is valid for 1 minute. \n\n If you have not requested this, please ignore this email.`;
 
   try {
     console.log('Sending OTP email to:', user.email);
