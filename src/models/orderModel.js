@@ -28,9 +28,14 @@ const orderSchema = new mongoose.Schema({
     required: [true, 'Address is required']
   },
   cartItems: [cartItemSchema],
-  status: {
+  contractStages: {
     type: String,
-    enum: ['Pending', 'Ordering', 'Fees', "Shipping", 'Delivering','Installing', 'Completed', 'Cancelled'],
+    enum: ['Pending', 'Cabin-Selection', 'Floor-Selection', "Doors-Selection", 'Approve', 'Signature'],
+    default: 'Pending'
+  },
+  implementationStages: {
+    type: String,
+    enum: ['Pending', 'Manufacturing-Started', "Shipping", 'Customs', 'Arrival-At-The-Site','Mechanical-Installation', 'Electricity-Connection-And-Elevator-Operation', 'Elevator-Delivery'],
     default: 'Pending'
   },
   createdAt: {
