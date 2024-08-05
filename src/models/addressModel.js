@@ -17,10 +17,6 @@ const addressSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide the building number']
   },
-  flat: {
-    type: String,
-    required: [true, 'Please provide the flat number']
-  },
   locationLink: {
     type: String,
     required: [true, 'Please provide the location link']

@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const productCategorySchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
+    required: [true, 'Please add a title'],
     unique: true,
     index: true,
   },
