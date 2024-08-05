@@ -4,7 +4,7 @@ const productSchema = new mongoose.Schema({
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ProductCategory',
-    required: true
+    required: [true, 'Category is required']
   },
   slug: {
     type: String,
@@ -15,15 +15,15 @@ const productSchema = new mongoose.Schema({
   name: {
     type: String,
     unique: true,
-    required: true
+    required: [true, 'Name is required']
   },
   description: {
     type: String,
-    required: true
+    required: [true, 'Description is required']
   },
   mainPhoto: {
     type: String,
-    required: true
+    required: [true, 'Main photo is required']
   },
   photos: [String]
 }, { timestamps: true });

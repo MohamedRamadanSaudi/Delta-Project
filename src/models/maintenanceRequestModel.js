@@ -4,7 +4,7 @@ const maintenanceRequestSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: ['normal', 'urgent'],
-    required: true
+    required: [true, 'A maintenance request must have a type (normal or urgent)']
   },
   address: {
     type: mongoose.Schema.Types.ObjectId,
@@ -27,7 +27,7 @@ const maintenanceRequestSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: [true, 'A maintenance request must belong to a user']
   },
   status: {
     type: String,
