@@ -21,6 +21,7 @@ const Notifications = require('./routes/notificationRoutes');
 const Cart = require('./routes/cartRoutes');
 const Order = require('./routes/orderRoutes');
 const Pdf = require('./routes/pdfRoutes');
+const Slider = require('./routes/sliderRoutes');
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/api/notifications', Notifications);
 app.use('/api/carts', Cart);
 app.use('/api/orders', Order);
 app.use('/api/pdf', Pdf);
+app.use('/api/slider', Slider);
 
 // Catch-all route handler for undefined routes
 app.all('*', (req, res, next) => {

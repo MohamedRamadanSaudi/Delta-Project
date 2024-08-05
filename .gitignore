@@ -4,3 +4,4 @@ node_modules/
 /src/config/firebaseServiceAccount.json
 googleDriveApiKey.json
 encodeFile.js
+TODO.txt

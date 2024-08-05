@@ -1,9 +1,6 @@
 const mongoose = require('mongoose');
 const Product = require('../models/productModel');
 const Category = require('../models/productCategoryModel');
-const User = require('../models/userModel');
-const cloudinary = require('../config/cloudinary');
-const fs = require('fs');
 const slugify = require('slugify');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
@@ -37,31 +34,21 @@ exports.createProduct = catchAsync(async (req, res, next) => {
   const slug = slugify(name, { lower: true });
 
   if (req.file && req.file.path) {
-    
-      // Upload main photo to Cloudinary
-      const mainPhotoResult = await cloudinary.uploader.upload(req.file.path, {
-        public_id: `products/${slug}-${Date.now()}-main-photo`, // Ensure unique public_id
-        overwrite: false, // Do not overwrite existing file
-        tags: ['main_photo'], // Optional tags for organizing in Cloudinary
-        transformation: [
-          { quality: 90 }
-        ]
-      });
-      const mainPhoto = mainPhotoResult.secure_url;
+    // Use the uploaded file path directly from Multer
+    const mainPhoto = req.file.path;
 
-      // Create a new product
-      const newProduct = new Product({
-        category: categoryExists._id,
-        slug,
-        name,
-        description,
-        mainPhoto,
-        photos: []
-      });
+    // Create a new product
+    const newProduct = new Product({
+      category: categoryExists._id,
+      slug,
+      name,
+      description,
+      mainPhoto,
+      photos: []
+    });
 
-      await newProduct.save();
-      res.status(201).json(newProduct);
-    
+    await newProduct.save();
+    res.status(201).json(newProduct);
   } else {
     return next(new AppError('Main photo is required', 400));
   }
@@ -76,60 +63,36 @@ exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  
-    // Find the product by ID
-    const product = await Product.findById(id);
-    if (!product) {
-      return next(new AppError('Product not found', 404));
+  // Find the product by ID
+  const product = await Product.findById(id);
+  if (!product) {
+    return next(new AppError('Product not found', 404));
+  }
+
+  // Check the number of existing photos
+  const existingPhotosCount = product.photos.length;
+  if (existingPhotosCount >= 5) {
+    return next(new AppError('Product already has the maximum number of photos', 400));
+  }
+
+  // Determine the number of photos that can be uploaded
+  const maxUploads = 5 - existingPhotosCount;
+  const filesToUpload = req.files.slice(0, maxUploads);
+
+  // Collect URLs of the uploaded photos
+  const photos = filesToUpload.map(file => file.path);
+
+  // Add new photos to the product's photos array
+  product.photos = [...product.photos, ...photos];
+  await product.save();
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Photos uploaded successfully',
+    data: {
+      product
     }
-
-    // Check the number of existing photos
-    const existingPhotosCount = product.photos.length;
-
-    if (existingPhotosCount >= 5) {
-      return next(new AppError('Product already has the maximum number of photos', 400));
-    }
-
-    // Determine the number of photos that can be uploaded
-    const maxUploads = 5 - existingPhotosCount;
-    const filesToUpload = req.files.slice(0, maxUploads);
-
-    // Upload additional photos to Cloudinary
-    const photos = [];
-    if (filesToUpload && filesToUpload.length > 0) {
-      const slug = product.slug; // Assuming you have a 'slug' field in your Product model
-
-      for (let i = 0; i < filesToUpload.length; i++) {
-        const file = req.files[i];
-        const uniqueIdentifier = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-
-        const photoResult = await cloudinary.uploader.upload(file.path, {
-          public_id: `products/${slug}-${existingPhotosCount + i}-${uniqueIdentifier}`, // Ensure unique public_id
-          overwrite: false, // Do not overwrite existing file
-          tags: ['product_photo'], // Optional tags for organizing in Cloudinary
-          transformation: [
-            { quality: 90 }
-          ]
-        });
-
-        photos.push(photoResult.secure_url);
-      }
-
-      // Add new photos to the product's photos array
-      product.photos = [...product.photos, ...photos];
-      await product.save();
-
-      res.status(200).json({
-        status: 'success',
-        message: 'Photos uploaded successfully',
-        data: {
-          product
-        }
-      });
-    } else {
-      return next(new AppError('No photos were uploaded', 400));
-    }
-  
+  });
 });
 
 // Get all products, optionally filtered by category
@@ -203,41 +166,40 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  
-    // Build the update object from req.body
-    const updateObject = {};
-    for (const key in req.body) {
-      if (key === 'category') {
-        // Assuming 'category' can be either ObjectId or category title
-        const category = await Category.findOne({ title: req.body[key] });
-        if (category) {
-          updateObject.category = category._id; // Update with the category ObjectId
-        } else {
-          // Handle case where category title doesn't exist
-          return next(new AppError('Category not found', 404));
-        }
+  // Build the update object from req.body
+  const updateObject = {};
+  for (const key in req.body) {
+    if (key === 'category') {
+      // Assuming 'category' can be either ObjectId or category title
+      const category = await Category.findOne({ title: req.body[key] });
+      if (category) {
+        updateObject.category = category._id; // Update with the category ObjectId
       } else {
-        updateObject[key] = req.body[key]; // Directly update other fields
+        // Handle case where category title doesn't exist
+        return next(new AppError('Category not found', 404));
       }
+    } else {
+      updateObject[key] = req.body[key]; // Directly update other fields
     }
+  }
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, updateObject, {
-      new: true,
-      runValidators: true,
-    });
+  const updatedProduct = await Product.findByIdAndUpdate(id, updateObject, {
+    new: true,
+    runValidators: true,
+  });
 
-    if (!updatedProduct) {
-      return next(new AppError('Product not found', 404));
-    }
+  if (!updatedProduct) {
+    return next(new AppError('Product not found', 404));
+  }
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        product: updatedProduct,
-      },
-    });
-  
+  res.status(200).json({
+    status: 'success',
+    data: {
+      product: updatedProduct,
+    },
+  });
 });
+
 // Update the main photo of a product by ID
 exports.updateProductMainPhoto = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -245,39 +207,32 @@ exports.updateProductMainPhoto = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  
-    // Find the product by ID
-    const product = await Product.findById(id);
-    if (!product) {
-      return next(new AppError('Product not found', 404));
+  // Find the product by ID
+  const product = await Product.findById(id);
+  if (!product) {
+    return next(new AppError('Product not found', 404));
+  }
+
+  // Delete the old main photo from Cloudinary
+  if (product.mainPhoto) {
+    const mainPhotoPublicId = product.mainPhoto.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
+    await cloudinary.uploader.destroy(`products/${mainPhotoPublicId}`);
+  }
+
+  // Use the uploaded file path directly from Multer
+  const mainPhoto = req.file.path;
+
+  // Update the main photo URL in the product
+  product.mainPhoto = mainPhoto;
+  await product.save();
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Main photo updated successfully',
+    data: {
+      product
     }
-
-    // Delete the old main photo from Cloudinary
-    if (product.mainPhoto) {
-      const mainPhotoPublicId = product.mainPhoto.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
-      await cloudinary.uploader.destroy(`products/${mainPhotoPublicId}`);
-    }
-
-    // Upload new main photo to Cloudinary
-    const slug = product.slug; // Assuming you have a 'slug' field in your Product model
-    const mainPhotoResult = await cloudinary.uploader.upload(req.file.path, {
-      public_id: `products/${slug}-${Date.now()}-main-photo`, // Ensure unique public_id
-      overwrite: false, // Do not overwrite existing file
-      tags: ['main_photo'] // Optional tags for organizing in Cloudinary
-    });
-
-    // Update the main photo URL in the product
-    product.mainPhoto = mainPhotoResult.secure_url;
-    await product.save();
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Main photo updated successfully',
-      data: {
-        product
-      }
-    });
-  
+  });
 });
 
 // Delete a product by ID
@@ -287,32 +242,30 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  
-    // Find the product by ID
-    const product = await Product.findById(id);
-    if (!product) {
-      return next(new AppError('Product not found', 404));
+  // Find the product by ID
+  const product = await Product.findById(id);
+  if (!product) {
+    return next(new AppError('Product not found', 404));
+  }
+
+  // Delete main photo from Cloudinary if exists
+  if (product.mainPhoto) {
+    const mainPhotoPublicId = product.mainPhoto.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
+    await cloudinary.uploader.destroy(`products/${mainPhotoPublicId}`);
+  }
+
+  // Delete additional photos from Cloudinary if exist
+  if (product.photos.length > 0) {
+    for (const photoUrl of product.photos) {
+      const photoPublicId = photoUrl.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
+      await cloudinary.uploader.destroy(`products/${photoPublicId}`);
     }
+  }
 
-    // Delete main photo from Cloudinary if exists
-    if (product.mainPhoto) {
-      const mainPhotoPublicId = product.mainPhoto.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
-      await cloudinary.uploader.destroy(`products/${mainPhotoPublicId}`);
-    }
+  // Delete the product from the database
+  await product.deleteOne();
 
-    // Delete additional photos from Cloudinary if exist
-    if (product.photos.length > 0) {
-      for (const photoUrl of product.photos) {
-        const photoPublicId = photoUrl.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
-        await cloudinary.uploader.destroy(`products/${photoPublicId}`);
-      }
-    }
-
-    // Delete the product from the database
-    await product.deleteOne();
-
-    res.status(200).json({ message: 'Product deleted' });
-  
+  res.status(200).json({ message: 'Product deleted' });
 });
 
 // Search products by name with pagination

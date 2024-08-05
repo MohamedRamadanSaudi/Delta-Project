@@ -4,10 +4,13 @@ const cloudinary = require('./cloudinary');
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'products', // Folder in Cloudinary to store uploaded files
-    format: async (req, file) => 'png', // Supports promises as well
-    public_id: (req, file) => file.originalname.split('.')[0] // File name without extension
+  params: async (req, file) => {
+    const folder = req.baseUrl.includes('slider') ? 'slider' : 'products';
+    return {
+      folder: folder,
+      format: 'png', // Supports promises as well
+      public_id: `${Date.now()}-${file.originalname.split('.')[0]}` // Ensure unique public_id
+    };
   }
 });
 
