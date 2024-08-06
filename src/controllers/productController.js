@@ -251,14 +251,14 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
   // Delete main photo from Cloudinary if exists
   if (product.mainPhoto) {
     const mainPhotoPublicId = product.mainPhoto.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
-    await cloudinary.uploader.destroy(`products/${mainPhotoPublicId}`);
+    await cloudinary.uploader.destroy(mainPhotoPublicId);
   }
 
   // Delete additional photos from Cloudinary if exist
   if (product.photos.length > 0) {
     for (const photoUrl of product.photos) {
       const photoPublicId = photoUrl.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
-      await cloudinary.uploader.destroy(`products/${photoPublicId}`);
+      await cloudinary.uploader.destroy(photoPublicId);
     }
   }
 

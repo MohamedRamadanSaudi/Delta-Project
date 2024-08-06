@@ -70,11 +70,18 @@ const deleteCategory = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid category ID', 400));
   }
 
-  const deletedCategory = await ProductCategory.findByIdAndDelete(id);
-  if (!deletedCategory) {
+  const category = await ProductCategory.findByIdAndDelete(id);
+  if (!category) {
     return next(new AppError('Category not found', 404));
   }
-  res.json({ message: 'Category deleted successfully', deletedCategory });
+
+  // Delete category photo from Cloudinary if exists
+  if (category.photo) {
+    const photoPublicId = category.photo.match(/categories\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
+    await cloudinary.uploader.destroy(photoPublicId);
+  }
+
+  res.json({ message: 'Category deleted successfully', deletedCategory: category });
 });
 
 // Get Category

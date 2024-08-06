@@ -9,7 +9,7 @@ exports.addPhoto = catchAsync(async (req, res, next) => {
     return next(new AppError('No file uploaded!', 400));
   }
 
-  // The file is already uploaded to Cloudinary by Multer, we just need to save the URL in the database
+  // Ensure the file path is correct, taking it from the Cloudinary response
   const newPhoto = await Slider.create({ photoUrl: req.file.path });
 
   res.status(201).json({
@@ -35,16 +35,18 @@ exports.getAllPhotos = catchAsync(async (req, res, next) => {
 // Delete a photo from the slider
 
 exports.deletePhoto = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
+  const photo = await Slider.findById(req.params.id);
 
-  const photo = await Slider.findByIdAndDelete(id);
   if (!photo) {
-    return next(new AppError('Photo not found', 404));
+    return next(new AppError('No photo found with that ID', 404));
   }
 
-  // Extract the public ID from the photo URL
-  const publicId = photo.photoUrl.match(/slider\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
+  // Delete the photo from Cloudinary
+  const publicId = photo.photoUrl.split('/').slice(-1)[0].split('.')[0]; // Extract the public_id from the URL
   await cloudinary.uploader.destroy(`slider/${publicId}`);
+
+  // Remove the photo from the database
+  await Slider.findByIdAndDelete(req.params.id);
 
   res.status(204).json({
     status: 'success',
