@@ -76,6 +76,14 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Cart'
   },
+  isUserHasMaintenanceRequest: {
+    type: Boolean,
+    default: false
+  },
+  isUserHasContract: {
+    type: Boolean,
+    default: false
+  },
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,

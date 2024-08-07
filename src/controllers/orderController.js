@@ -109,28 +109,13 @@ exports.getOrderById = catchAsync(async (req, res, next) => {
   });
 });
 
-// Update order (admin) // 
+// Update order (admin)
 exports.updateOrder = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const updates = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return next(new AppError('Invalid order ID', 400));
-  }
-  
-  // Check if address is included in the updates and handle it separately
-  if (updates.address) {
-    const addressId = updates.address._id;
-    if (!mongoose.Types.ObjectId.isValid(addressId)) {
-      return next(new AppError('Invalid address ID', 400));
-    }
-    // Assuming Address is a model for address documents
-    await Address.findByIdAndUpdate(addressId, updates.address, {
-      new: true,
-      runValidators: true
-    });
-    // Remove the address from the updates to avoid trying to update it on the Order model
-    delete updates.address;
   }
 
   const order = await Order.findByIdAndUpdate(id, updates, {
@@ -144,6 +129,10 @@ exports.updateOrder = catchAsync(async (req, res, next) => {
 
   if (!order) {
     return next(new AppError('Order not found', 404));
+  }
+
+  if (updates.contractStages === 'Signature') {
+    await mongoose.model('User').findByIdAndUpdate(order.user, { isUserHasContract: true });
   }
 
   res.status(200).json({
