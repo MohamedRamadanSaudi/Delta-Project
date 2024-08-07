@@ -25,7 +25,8 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Main photo is required']
   },
-  photos: [String]
+  photos: [String],
+  cloudinaryFolder: String,
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);

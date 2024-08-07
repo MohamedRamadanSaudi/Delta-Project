@@ -4,6 +4,7 @@ const Category = require('../models/productCategoryModel');
 const slugify = require('slugify');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const cloudinary = require('../config/cloudinary');
 const upload = require('../config/multer');
 
 // Utility function to validate MongoDB Object IDs
@@ -19,32 +20,43 @@ exports.uploadProductPhotos = upload.array('photos', 5); // Allow up to 5 photos
 exports.createProduct = catchAsync(async (req, res, next) => {
   const { category, name, description } = req.body;
 
-  // Check if the category name is provided
   if (!category) {
     return next(new AppError('Category name is required', 400));
   }
 
-  // Find the category by name
   const categoryExists = await Category.findOne({ title: category });
   if (!categoryExists) {
     return next(new AppError('Category not found', 404));
   }
 
-  // Create slug from product name
   const slug = slugify(name, { lower: true });
+  const productFolderId = new mongoose.Types.ObjectId().toString();
 
   if (req.file && req.file.path) {
-    // Use the uploaded file path directly from Multer
-    const mainPhoto = req.file.path;
+    const mainPhotoResult = await cloudinary.uploader.upload(req.file.path, {
+      folder: `products/${productFolderId}`
+    });
 
-    // Create a new product
+    const photos = [];
+    if (req.files && req.files.length > 0) {
+      const uploadPromises = req.files.map(file =>
+        cloudinary.uploader.upload(file.path, {
+          folder: `products/${productFolderId}`
+        })
+      );
+
+      const uploadResults = await Promise.all(uploadPromises);
+      uploadResults.forEach(result => photos.push(result.secure_url));
+    }
+
     const newProduct = new Product({
       category: categoryExists._id,
       slug,
       name,
       description,
-      mainPhoto,
-      photos: []
+      mainPhoto: mainPhotoResult.secure_url,
+      photos,
+      cloudinaryFolder: `products/${productFolderId}`
     });
 
     await newProduct.save();
@@ -58,31 +70,32 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  // Validate if id is a valid MongoDB ObjectId
   if (!isValidObjectId(id)) {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  // Find the product by ID
   const product = await Product.findById(id);
   if (!product) {
     return next(new AppError('Product not found', 404));
   }
 
-  // Check the number of existing photos
   const existingPhotosCount = product.photos.length;
   if (existingPhotosCount >= 5) {
     return next(new AppError('Product already has the maximum number of photos', 400));
   }
 
-  // Determine the number of photos that can be uploaded
   const maxUploads = 5 - existingPhotosCount;
   const filesToUpload = req.files.slice(0, maxUploads);
 
-  // Collect URLs of the uploaded photos
-  const photos = filesToUpload.map(file => file.path);
+  const uploadPromises = filesToUpload.map(file => 
+    cloudinary.uploader.upload(file.path, {
+      folder: product.cloudinaryFolder
+    })
+  );
+  const uploadResults = await Promise.all(uploadPromises);
 
-  // Add new photos to the product's photos array
+  const photos = uploadResults.map(result => result.secure_url);
+
   product.photos = [...product.photos, ...photos];
   await product.save();
 
@@ -207,23 +220,21 @@ exports.updateProductMainPhoto = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  // Find the product by ID
   const product = await Product.findById(id);
   if (!product) {
     return next(new AppError('Product not found', 404));
   }
 
-  // Delete the old main photo from Cloudinary
   if (product.mainPhoto) {
-    const mainPhotoPublicId = product.mainPhoto.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
-    await cloudinary.uploader.destroy(`products/${mainPhotoPublicId}`);
+    const mainPhotoPublicId = product.mainPhoto.split('/').pop().split('.')[0];
+    await cloudinary.uploader.destroy(`${product.cloudinaryFolder}/${mainPhotoPublicId}`);
   }
 
-  // Use the uploaded file path directly from Multer
-  const mainPhoto = req.file.path;
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    folder: product.cloudinaryFolder
+  });
 
-  // Update the main photo URL in the product
-  product.mainPhoto = mainPhoto;
+  product.mainPhoto = result.secure_url;
   await product.save();
 
   res.status(200).json({
@@ -242,30 +253,48 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid product ID', 400));
   }
 
-  // Find the product by ID
   const product = await Product.findById(id);
   if (!product) {
     return next(new AppError('Product not found', 404));
   }
 
-  // Delete main photo from Cloudinary if exists
-  if (product.mainPhoto) {
-    const mainPhotoPublicId = product.mainPhoto.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
-    await cloudinary.uploader.destroy(mainPhotoPublicId);
-  }
+  if (product.cloudinaryFolder) {
+    try {
+      // Delete all resources in the folder
+      const { resources } = await cloudinary.api.resources({
+        type: 'upload',
+        prefix: product.cloudinaryFolder
+      });
 
-  // Delete additional photos from Cloudinary if exist
-  if (product.photos.length > 0) {
-    for (const photoUrl of product.photos) {
-      const photoPublicId = photoUrl.match(/products\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
-      await cloudinary.uploader.destroy(photoPublicId);
+      const deletePromises = resources.map(resource => 
+        cloudinary.uploader.destroy(resource.public_id)
+      );
+
+      await Promise.all(deletePromises);
+
+      // Check and delete any photos in the root folder with the same product ID in their public ID
+      const rootResources = await cloudinary.api.resources({
+        type: 'upload',
+        prefix: 'products'
+      });
+
+      const rootDeletePromises = rootResources.resources
+        .filter(resource => resource.public_id.includes(product.cloudinaryFolder))
+        .map(resource => cloudinary.uploader.destroy(resource.public_id));
+
+      await Promise.all(rootDeletePromises);
+
+      // Now try to delete the empty folder
+      await cloudinary.api.delete_folder(product.cloudinaryFolder);
+      console.log(`Deleted folder: ${product.cloudinaryFolder}`);
+    } catch (error) {
+      console.error('Error deleting resources or folder from Cloudinary:', error);
     }
   }
 
-  // Delete the product from the database
   await product.deleteOne();
 
-  res.status(200).json({ message: 'Product deleted' });
+  res.status(200).json({ message: 'Product and associated images deleted successfully' });
 });
 
 // Search products by name with pagination

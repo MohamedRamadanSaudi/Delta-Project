@@ -42,7 +42,7 @@ exports.deletePhoto = catchAsync(async (req, res, next) => {
   }
 
   // Delete the photo from Cloudinary
-  const publicId = photo.photoUrl.split('/').slice(-1)[0].split('.')[0]; // Extract the public_id from the URL
+  const publicId = photo.photoUrl.split('/').pop().split('.')[0];
   await cloudinary.uploader.destroy(`slider/${publicId}`);
 
   // Remove the photo from the database

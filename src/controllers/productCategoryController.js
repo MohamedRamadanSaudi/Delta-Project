@@ -77,8 +77,8 @@ const deleteCategory = catchAsync(async (req, res, next) => {
 
   // Delete category photo from Cloudinary if exists
   if (category.photo) {
-    const photoPublicId = category.photo.match(/categories\/(.*?)\.(\w{3,4})(?:$|\?)/)[1];
-    await cloudinary.uploader.destroy(photoPublicId);
+    const photoPublicId = category.photo.split('/').pop().split('.')[0];
+    await cloudinary.uploader.destroy(`categories/${photoPublicId}`);
   }
 
   res.json({ message: 'Category deleted successfully', deletedCategory: category });
