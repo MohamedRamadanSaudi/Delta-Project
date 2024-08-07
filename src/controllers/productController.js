@@ -113,7 +113,7 @@ exports.getProducts = catchAsync(async (req, res, next) => {
   let filter = {};
 
   // If categoryName is provided and it's not "All", filter by category name
-  if (req.query.category && req.query.category.toLowerCase() !== 'all') {
+  if (req.query.category && req.query.category.toLowerCase() !== 'الكل') {
     const category = await Category.findOne({ title: req.query.category });
     if (!category) {
       return next(new AppError('Category not found', 404));
@@ -126,7 +126,7 @@ exports.getProducts = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
 
   // If categoryName is provided and it's "All", do not apply category filter
-  if (req.query.category && req.query.category.toLowerCase() === 'all') {
+  if (req.query.category && req.query.category.toLowerCase() === 'الكل') {
     filter = {}; // Clear the filter to fetch all products
   }
 
