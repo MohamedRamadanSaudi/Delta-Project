@@ -70,6 +70,12 @@ const deleteCategory = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid category ID', 400));
   }
 
+  // Check if category is "all" don't allow to delete
+  const productCategory = await ProductCategory.findById(id);
+  if (productCategory.title == 'الكل') {
+    return next(new AppError('Cannot delete default category', 400));
+  }
+
   const category = await ProductCategory.findByIdAndDelete(id);
   if (!category) {
     return next(new AppError('Category not found', 404));
