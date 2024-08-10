@@ -7,7 +7,13 @@ const AppError = require('../utils/appError');
 exports.getCart = catchAsync(async (req, res, next) => {
   const { _id: userId } = req.user;
 
-  const cart = await Cart.findOne({ user: userId }).populate('items.product');
+  const cart = await Cart.findOne({ user: userId })
+    .populate({
+      path: 'items.product',
+      populate: {
+        path: 'category'
+      }
+    });
   if (!cart) {
     return next(new AppError('Cart not found', 404));
   }
