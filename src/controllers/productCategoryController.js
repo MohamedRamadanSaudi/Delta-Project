@@ -70,6 +70,12 @@ const deleteCategory = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid category ID', 400));
   }
 
+  // Check if category is "all" don't allow to delete
+  const productCategory = await ProductCategory.findById(id);
+  if (productCategory.title == 'الكل') {
+    return next(new AppError('Cannot delete default category', 400));
+  }
+
   const category = await ProductCategory.findByIdAndDelete(id);
   if (!category) {
     return next(new AppError('Category not found', 404));
@@ -100,21 +106,14 @@ const getCategory = catchAsync(async (req, res, next) => {
 
 // Get All Categories
 const getAllCategories = catchAsync(async (req, res, next) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 5;
-  const skip = (page - 1) * limit;
-
-  const categories = await ProductCategory.find().skip(skip).limit(limit);
+  const categories = await ProductCategory.find();
   const total = await ProductCategory.countDocuments();
 
   res.status(200).json({
     status: 'success',
     results: categories.length,
     data: {
-      categories,
-      total,
-      totalPages: Math.ceil(total / limit),
-      currentPage: page
+      categories
     }
   });
 });
