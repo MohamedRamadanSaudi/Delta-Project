@@ -137,16 +137,17 @@ exports.updateMaintenanceStatus = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  if (status === 'completed') {
-    await mongoose.model('User').findByIdAndUpdate(request.user, { isUserHasMaintenanceRequest: true });
-  }
-
+  
   const request = await MaintenanceRequest.findByIdAndUpdate(id, { status }, { new: true });
-
+  
   if (!request) {
     return next(new AppError('Maintenance request not found', 404));
   }
-
+  
+  if (status === 'completed') {
+    await mongoose.model('User').findByIdAndUpdate(request.user, { isUserHasMaintenanceRequest: true });
+  }
+  
   res.status(200).json({
     status: 'success',
     data: {
