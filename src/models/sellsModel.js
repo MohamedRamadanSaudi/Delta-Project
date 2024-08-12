@@ -10,9 +10,13 @@ const sellsSchema = new mongoose.Schema({
     required: [true, 'Please provide the email'],
     unique: [true, 'Email already exists'],
   },
-  phone: {
+  mobilePhone: {
     type: String,
-    required: [true, 'Please provide the phone'],
+    required: [true, 'Please provide the mobile phone number'],
+  },
+  whatsapp: {
+    type: String,
+    required: [true, 'Please provide the whatsapp number'],
   },
 });
 
