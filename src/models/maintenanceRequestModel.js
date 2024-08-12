@@ -21,8 +21,7 @@ const maintenanceRequestSchema = new mongoose.Schema({
   },
   time: {
     type: String,
-    enum: ['am', 'pm'],
-    required: [true, 'A maintenance request must specify time as either "am" or "pm"']
+    required: [true, 'A maintenance request must specify the time']
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,

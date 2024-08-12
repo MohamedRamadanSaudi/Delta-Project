@@ -61,6 +61,14 @@ exports.addToCart = catchAsync(async (req, res, next) => {
   // Save the cart
   await cart.save();
 
+  // Populate the product details in the response
+  cart = await cart.populate({
+    path: 'items.product',
+    populate: {
+      path: 'category'
+    }
+  });
+
   // Respond with the updated cart
   res.status(200).json({
     status: 'success',
@@ -69,6 +77,7 @@ exports.addToCart = catchAsync(async (req, res, next) => {
     }
   });
 });
+
 
 // Remove product from cart
 exports.removeFromCart = catchAsync(async (req, res, next) => {
@@ -87,10 +96,19 @@ exports.removeFromCart = catchAsync(async (req, res, next) => {
     await cart.save();
   }
 
+  // Populate the product details in the response
+  const populatedCart = await Cart.findOne({ user: userId })
+    .populate({
+      path: 'items.product',
+      populate: {
+        path: 'category'
+      }
+    });
+
   res.status(200).json({
     status: 'success',
     data: {
-      cart
+      cart: populatedCart
     }
   });
 });
