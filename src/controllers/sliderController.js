@@ -5,12 +5,21 @@ const catchAsync = require('../utils/catchAsync');
 
 // Add a new photo to the slider
 exports.addPhoto = catchAsync(async (req, res, next) => {
+  const { productId } = req.body;
+
   if (!req.file) {
     return next(new AppError('No file uploaded!', 400));
   }
 
+  if (!productId) {
+    return next(new AppError('Product ID is required!', 400));
+  }
+
   // Ensure the file path is correct, taking it from the Cloudinary response
-  const newPhoto = await Slider.create({ photoUrl: req.file.path });
+  const newPhoto = await Slider.create({
+    photoUrl: req.file.path,
+    productId: productId
+  });
 
   res.status(201).json({
     status: 'success',
@@ -22,7 +31,7 @@ exports.addPhoto = catchAsync(async (req, res, next) => {
 
 // Get all slider photos
 exports.getAllPhotos = catchAsync(async (req, res, next) => {
-  const photos = await Slider.find();
+  const photos = await Slider.find().populate('productId'); 
   res.status(200).json({
     status: 'success',
     results: photos.length,
@@ -33,7 +42,6 @@ exports.getAllPhotos = catchAsync(async (req, res, next) => {
 });
 
 // Delete a photo from the slider
-
 exports.deletePhoto = catchAsync(async (req, res, next) => {
   const photo = await Slider.findById(req.params.id);
 

@@ -4,6 +4,10 @@ const sliderSchema = new mongoose.Schema({
   photoUrl: {
     type: String,
     required: [true, 'Photo URL is required']
+  },
+  productId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Product'
   }
 });
 
