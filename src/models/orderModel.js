@@ -50,6 +50,10 @@ const orderSchema = new mongoose.Schema({
     enum: ['Pending', 'Manufacturing-Started', "Shipping", 'Customs', 'Arrival-At-The-Site','Mechanical-Installation', 'Electricity-Connection-And-Elevator-Operation', 'Elevator-Delivery'],
     default: 'Pending'
   },
+  status: {
+    type: String,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now
