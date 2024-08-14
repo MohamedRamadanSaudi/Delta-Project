@@ -27,6 +27,18 @@ const orderSchema = new mongoose.Schema({
     ref: 'Address',
     required: [true, 'Address is required']
   },
+  firstBatch: {
+    type: String,
+    default: ''
+  },
+  secondBatch: {
+    type: String,
+    default: ''
+  },
+  thirdBatch: {
+    type: String,
+    default: ''
+  },
   cartItems: [cartItemSchema],
   contractStages: {
     type: String,
