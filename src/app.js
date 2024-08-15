@@ -8,7 +8,7 @@ const morgan = require("morgan");
 const connectDB = require('./config/database');
 const AppError = require('./utils/appError');
 const errorHandler = require('./middlewares/errorHandler');
-const rateLimit = require('express-rate-limit');
+const rateLimiter = require('./middlewares/rateLimiter');
 
 const User = require('./routes/userRoutes');
 const Otp = require('./routes/otpRoutes');
@@ -29,19 +29,13 @@ const app = express();
 // Connect to Database
 connectDB();
 
-// // Limit requests from same API
-// const limiter = rateLimit({
-//   max: 100,
-//   windowMs: 60 * 60 * 1000,
-//   message: 'Too many requests from this IP, please try again in an hour!'
-// });
-// app.use('/api', limiter);
-
 // Middlewares
 app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(cors());
 app.use(bodyParser.json());
+// Apply rate limiting for non-admin users
+// app.use('/api', rateLimiter);
 
 // Routes
 app.use('/api/users', User);
