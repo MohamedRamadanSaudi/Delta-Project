@@ -40,9 +40,14 @@ exports.createOrder = catchAsync(async (req, res, next) => {
 exports.getUserOrders = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
 
-  const orders = await Order.find({ user: userId }).populate({
-    path: 'cartItems.product'
-  }).populate('address');
+  const orders = await Order.find({ user: userId })
+    .populate({
+      path: 'cartItems.product',
+      populate: {
+        path: 'category'
+      }
+    })
+    .populate('address');
 
   res.status(200).json({
     status: 'success',

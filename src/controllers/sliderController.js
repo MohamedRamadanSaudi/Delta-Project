@@ -31,7 +31,7 @@ exports.addPhoto = catchAsync(async (req, res, next) => {
 
 // Get all slider photos
 exports.getAllPhotos = catchAsync(async (req, res, next) => {
-  const photos = await Slider.find().populate('productId'); 
+  const photos = await Slider.find(); 
   res.status(200).json({
     status: 'success',
     results: photos.length,
