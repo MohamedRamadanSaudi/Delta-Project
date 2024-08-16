@@ -1,6 +1,7 @@
 {
   "name": "delta-project",
   "version": "1.0.0",
+  "license": "MIT",
   "main": "src/app.js",
   "scripts": {
     "server": "nodemon src/app.js"
