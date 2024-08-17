@@ -42,13 +42,25 @@ const orderSchema = new mongoose.Schema({
   cartItems: [cartItemSchema],
   contractStages: {
     type: String,
-    enum: ['Pending', 'Cabin-Selection', 'Floor-Selection', "Doors-Selection", 'Approve', 'Signature'],
-    default: 'Pending'
+    enum: ['Pending', 'Signature'],
+    default: 'Pending',
+    validate: {
+      validator: function(value) {
+        return ['Pending', 'Signature'].includes(value);
+      },
+      message: props => `${props.value} is not a valid contract stage`
+    }
   },
   implementationStages: {
     type: String,
-    enum: ['Pending', 'Manufacturing-Started', "Shipping", 'Customs', 'Arrival-At-The-Site','Mechanical-Installation', 'Electricity-Connection-And-Elevator-Operation', 'Elevator-Delivery'],
-    default: 'Pending'
+    enum: ['pending', 'ordering', 'shipping', 'fees', 'delivering', 'installing', 'continuee', 'completed', 'cancelled'],
+    default: 'pending',
+    validate: {
+      validator: function(value) {
+        return ['pending', 'ordering', 'shipping', 'fees', 'delivering', 'installing', 'continuee', 'completed', 'cancelled'].includes(value);
+      },
+      message: props => `${props.value} is not a valid implementation stage`
+    }
   },
   status: {
     type: String,
