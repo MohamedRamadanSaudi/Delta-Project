@@ -13,13 +13,13 @@ router.post('/:id/photos', auth.auth, auth.isAdmin, productController.uploadProd
 router.post('/:id/main-photo', productController.uploadProductMainPhoto, productController.updateProductMainPhoto);
 
 // Get all products, optionally filtered by category
-router.get('/', auth.auth, productController.getProducts);
+router.get('/', productController.getProducts);
 
 // Search products by name
-router.get('/search', auth.auth, productController.searchProductsByName);
+router.get('/search', productController.searchProductsByName);
 
 // Get a single product by ID
-router.get('/:id', auth.auth, productController.getProductById);
+router.get('/:id', productController.getProductById);
 
 // Update a product by ID
 router.patch('/:id', auth.auth, auth.isAdmin, productController.updateProduct);
