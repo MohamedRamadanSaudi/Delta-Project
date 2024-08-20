@@ -20,7 +20,8 @@ const MaintenanceRequest = require('./routes/maintenanceRequestRoutes');
 const Notifications = require('./routes/notificationRoutes');
 const Cart = require('./routes/cartRoutes');
 const Order = require('./routes/orderRoutes');
-const Pdf = require('./routes/pdfRoutes');
+const orderContract = require('./routes/orderContractRoutes');
+const maintenanceContract = require('./routes/maintenanceContractRoutes');
 const Slider = require('./routes/sliderRoutes');
 const Sells = require('./routes/sellsRoutes');
 
@@ -48,7 +49,8 @@ app.use('/api/maintenance-requests', MaintenanceRequest);
 app.use('/api/notifications', Notifications);
 app.use('/api/carts', Cart);
 app.use('/api/orders', Order);
-app.use('/api/pdf', Pdf);
+app.use('/api/order-contract', orderContract);
+app.use('/api/maintenance-contract', maintenanceContract);
 app.use('/api/slider', Slider);
 app.use('/api/sells', Sells);
 
@@ -65,17 +67,16 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
 process.on('unhandledRejection', err => {
-    console.log('UNHANDLED REJECTION! 💥 Shutting down...');
-    console.log(err.name, err.message);
-    server.close(() => {
-      process.exit(1);
-    });
+  console.log('UNHANDLED REJECTION! 💥 Shutting down...');
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
   });
-  
-  process.on('SIGTERM', () => {
-    console.log('👋 SIGTERM RECEIVED. Shutting down gracefully');
-    server.close(() => {
-      console.log('💥 Process terminated!');
-    });
+});
+
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM RECEIVED. Shutting down gracefully');
+  server.close(() => {
+    console.log('💥 Process terminated!');
   });
-  
+});

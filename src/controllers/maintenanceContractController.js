@@ -1,6 +1,6 @@
 const multer = require('multer');
 const path = require('path');
-const PDF = require('../models/pdfModel');
+const MaintenanceContract = require('../models/maintenanceContractModel');
 const { uploadFile, deleteFile, getFile } = require('../utils/googleDrive');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -41,7 +41,7 @@ exports.uploadPDFFile = catchAsync(async (req, res, next) => {
   const filePath = path.join(__dirname, '..', 'uploads', req.file.filename);
   const uploadedFile = await uploadFile(filePath);
 
-  const pdf = await PDF.create({
+  const pdf = await MaintenanceContract.create({
     user: userId,
     filePath: uploadedFile.id,
     fileName: req.file.originalname
@@ -62,7 +62,7 @@ exports.uploadPDFFile = catchAsync(async (req, res, next) => {
 exports.deletePDF = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  const pdf = await PDF.findById(id);
+  const pdf = await MaintenanceContract.findById(id);
 
   if (!pdf) {
     return next(new AppError('PDF not found', 404));
@@ -72,7 +72,7 @@ exports.deletePDF = catchAsync(async (req, res, next) => {
   await deleteFile(pdf.filePath);
 
   // Remove the PDF document from the database
-  await PDF.findByIdAndDelete(id);
+  await MaintenanceContract.findByIdAndDelete(id);
 
   res.status(204).json({
     status: 'success',
@@ -84,7 +84,7 @@ exports.deletePDF = catchAsync(async (req, res, next) => {
 exports.downloadPDF = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  const pdf = await PDF.findById(id);
+  const pdf = await MaintenanceContract.findById(id);
 
   if (!pdf) {
     return next(new AppError('PDF not found', 404));
@@ -99,7 +99,7 @@ exports.downloadPDF = catchAsync(async (req, res, next) => {
 exports.getPdfIdsForUser = catchAsync(async (req, res, next) => {
   const { userId } = req.params;
 
-  const pdfs = await PDF.find({ user: userId }).select('user');
+  const pdfs = await MaintenanceContract.find({ user: userId }).select('user');
 
   if (!pdfs.length) {
     return next(new AppError('No PDFs found for this user', 404));

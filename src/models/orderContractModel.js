@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const pdfSchema = new mongoose.Schema({
+const orderContractSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -20,6 +20,6 @@ const pdfSchema = new mongoose.Schema({
   }
 });
 
-const PDF = mongoose.model('PDF', pdfSchema);
+const OrderContract = mongoose.model('OrderContract', orderContractSchema);
 
-module.exports = PDF;
+module.exports = OrderContract;
