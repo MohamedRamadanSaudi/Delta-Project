@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Route for getting all photos (accessible by all users)
 router.route('/').get(sliderController.getAllPhotos);
+router.route('/admin').get(auth.auth, auth.isAdmin, sliderController.getAllPhotos);
 
 // Route for adding a photo (admin only)
 router.route('/').post(auth.auth, auth.isAdmin, upload.single('photo'), sliderController.addPhoto);

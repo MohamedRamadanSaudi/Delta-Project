@@ -5,7 +5,9 @@ const router = express.Router();
 
 router.post('/', auth.auth, auth.isAdmin, categoryController.upload.single('photo'), categoryController.createCategory)
 router.get('/', categoryController.getAllCategories)
+router.get('/admin', auth.auth, auth.isAdmin, categoryController.getAllCategories)
 router.get('/:id', categoryController.getCategory)
+router.get('/admin/:id', auth.auth, auth.isAdmin, categoryController.getCategory)
 
 router
   .route('/:id', auth.auth, auth.isAdmin)
