@@ -30,7 +30,7 @@ To run this project locally:
    npm install
 3. Set up environment variables:
    Create a .env file in the root directory and add the environment variables.
-5. Run the application:
+4. Run the application:
    ```bash
    npm run server  
  The server will start on `http://localhost:3000`.

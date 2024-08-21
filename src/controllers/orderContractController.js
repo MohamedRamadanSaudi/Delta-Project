@@ -1,6 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const OrderContract = require('../models/orderContractModel');
+const User = require('../models/userModel');
 const { uploadFile, deleteFile, getFile } = require('../utils/googleDrive');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -33,6 +34,12 @@ exports.uploadPDF = upload.single('pdf');
 // Upload a PDF
 exports.uploadPDFFile = catchAsync(async (req, res, next) => {
   const { userId } = req.body;
+
+    // check if user already exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
 
   if (!req.file) {
     return next(new AppError('No file uploaded', 400));

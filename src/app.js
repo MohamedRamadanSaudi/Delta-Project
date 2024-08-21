@@ -35,6 +35,7 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
 // Apply rate limiting for non-admin users
 // app.use('/api', rateLimiter);
 
@@ -64,11 +65,14 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+const server = app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+});
 
-process.on('unhandledRejection', err => {
+process.on('unhandledRejection', (err) => {
   console.log('UNHANDLED REJECTION! 💥 Shutting down...');
   console.log(err.name, err.message);
+
   server.close(() => {
     process.exit(1);
   });
