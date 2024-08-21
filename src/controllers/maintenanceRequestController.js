@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const MaintenanceRequest = require('../models/maintenanceRequestModel');
+const cloudinary = require('../config/cloudinary');
 const Order = require('../models/orderModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -19,6 +20,35 @@ exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
     return next(new AppError('You already have an active maintenance request', 400));
   }
 
+  // Handle file uploads
+  let photoUrls = [];
+  let videoUrl = '';
+
+  if (req.files) {
+    if (req.files.photos) {
+      const photoUploadPromises = req.files.photos.map(file => 
+        cloudinary.uploader.upload(file.path, { 
+          resource_type: 'image',
+          folder: 'maintenance_requests',
+          quality: 'auto:low',
+          fetch_format: 'auto',
+        })
+      );
+      const photoResults = await Promise.all(photoUploadPromises);
+      photoUrls = photoResults.map(result => result.secure_url);
+    }
+
+    if (req.files.video) {
+      const videoResult = await cloudinary.uploader.upload(req.files.video[0].path, { 
+        resource_type: 'video',
+        folder: 'maintenance_requests',
+        quality: 'auto:low',
+        fetch_format: 'auto',
+      });
+      videoUrl = videoResult.secure_url;
+    }
+  }
+
   // Create new maintenance request
   const newRequest = await MaintenanceRequest.create({
     type,
@@ -26,7 +56,9 @@ exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
     description,
     date,
     time,
-    user: userId
+    user: userId,
+    photos: photoUrls,
+    video: videoUrl
   });
 
   res.status(201).json({
@@ -156,14 +188,41 @@ exports.updateMaintenanceStatus = catchAsync(async (req, res, next) => {
   });
 });
 
+// Helper function to delete file from Cloudinary
+const deleteFileFromCloudinary = async (publicId) => {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId);
+    console.log('File deleted from Cloudinary:', result);
+  } catch (error) {
+    console.error('Error deleting file from Cloudinary:', error);
+  }
+};
+
 // Delete a maintenance request by ID
 exports.deleteMaintenanceRequest = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const request = await MaintenanceRequest.findByIdAndDelete(id);
+  const request = await MaintenanceRequest.findById(id);
 
   if (!request) {
     return next(new AppError('Maintenance request not found', 404));
   }
+
+  // Delete photos from Cloudinary
+  if (request.photos && request.photos.length > 0) {
+    for (const photoUrl of request.photos) {
+      const publicId = photoUrl.split('/').slice(-2).join('/').split('.')[0];
+      await deleteFileFromCloudinary(publicId);
+    }
+  }
+
+  // Delete video from Cloudinary
+  if (request.video) {
+    const videoPublicId = request.video.split('/').slice(-2).join('/').split('.')[0];
+    await deleteFileFromCloudinary(videoPublicId);
+  }
+
+  // Delete the maintenance request from the database
+  await MaintenanceRequest.findByIdAndDelete(id);
 
   res.status(204).json({
     status: 'success',

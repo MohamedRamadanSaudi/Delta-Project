@@ -1,11 +1,22 @@
 const express = require('express');
+const multer = require('multer');
 const maintenanceRequestController = require('../controllers/maintenanceRequestController');
 const auth = require('../middlewares/AuthMiddleware');
 
 const router = express.Router();
 
-// Create a new maintenance request
-router.post('/', auth.auth, maintenanceRequestController.createMaintenanceRequest);
+// Configure Multer
+const upload = multer({ dest: 'uploads/' });
+
+// Create a new maintenance request with optional file uploads
+router.post('/', 
+  auth.auth, 
+  upload.fields([
+    { name: 'photos', maxCount: 5 },
+    { name: 'video', maxCount: 1 }
+  ]),
+  maintenanceRequestController.createMaintenanceRequest
+);
 
 // Get all normal maintenance requests
 router.get('/normal', auth.auth, auth.isAdmin, maintenanceRequestController.getAllNormalRequests);
