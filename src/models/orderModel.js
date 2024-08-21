@@ -27,6 +27,10 @@ const orderSchema = new mongoose.Schema({
     ref: 'Address',
     required: [true, 'Address is required']
   },
+  date: {
+    type: String,
+    required: [true, 'Date is required']
+  },
   firstBatch: {
     type: String,
     default: ''
