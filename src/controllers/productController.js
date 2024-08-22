@@ -6,6 +6,7 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const cloudinary = require('../config/cloudinary');
 const upload = require('../config/multer');
+const Cart = require('../models/cartModel');
 
 // Utility function to validate MongoDB Object IDs
 function isValidObjectId(id) {
@@ -294,8 +295,24 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
 
   await product.deleteOne();
 
+    // Remove the deleted product from all carts
+    removeProductFromAllCarts(id);
+
   res.status(200).json({ message: 'Product and associated images deleted successfully' });
 });
+
+// Function to remove a product from all carts
+async function removeProductFromAllCarts(productId) {
+  try {
+    await Cart.updateMany(
+      { "items.product": productId },
+      { $pull: { items: { product: productId } } }
+    );
+    console.log(`Product ${productId} removed from all carts`);
+  } catch (error) {
+    console.error('Error removing product from carts:', error);
+  }
+}
 
 // Search products by name with pagination
 exports.searchProductsByName = catchAsync(async (req, res, next) => {

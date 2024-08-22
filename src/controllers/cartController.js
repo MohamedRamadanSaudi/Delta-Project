@@ -7,7 +7,7 @@ const AppError = require('../utils/appError');
 exports.getCart = catchAsync(async (req, res, next) => {
   const { _id: userId } = req.user;
 
-  const cart = await Cart.findOne({ user: userId })
+  let cart = await Cart.findOne({ user: userId })
     .populate({
       path: 'items.product',
       populate: {
@@ -16,6 +16,14 @@ exports.getCart = catchAsync(async (req, res, next) => {
     });
   if (!cart) {
     return next(new AppError('Cart not found', 404));
+  }
+
+  // Filter out items with null products
+  cart.items = cart.items.filter(item => item.product !== null);
+
+  // Save the cart if any items were removed
+  if (cart.isModified('items')) {
+    await cart.save();
   }
 
   res.status(200).json({
