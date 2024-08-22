@@ -8,7 +8,7 @@ const storage = new CloudinaryStorage({
     const folder = req.baseUrl.includes('slider') ? 'slider' : 'products';
     return {
       folder: folder,
-      format: 'png', // Supports promises as well
+      format:  ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'mp4', 'mov', 'avi'],
       public_id: `${Date.now()}-${file.originalname.split('.')[0]}` // Ensure unique public_id
     };
   }

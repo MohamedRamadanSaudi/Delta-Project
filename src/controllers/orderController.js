@@ -6,7 +6,7 @@ const AppError = require('../utils/appError');
 
 // Create an order
 exports.createOrder = catchAsync(async (req, res, next) => {
-  const { address, name, phone } = req.body;
+  const { address, name, phone, data } = req.body;
   const userId = req.user._id;
 
   // Find the user's cart
@@ -21,6 +21,7 @@ exports.createOrder = catchAsync(async (req, res, next) => {
     user: userId,
     name: name || req.user.name,
     phone: phone || req.user.phone,
+    data,
     address,
     cartItems: cart.items // Store cart items directly in the order
   });
