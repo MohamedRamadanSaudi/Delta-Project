@@ -28,8 +28,8 @@ const orderSchema = new mongoose.Schema({
     required: [true, 'Address is required']
   },
   date: {
-    type: String,
-    required: [true, 'Date is required']
+    type: Date,
+    default: Date.now()
   },
   firstBatch: {
     type: String,
