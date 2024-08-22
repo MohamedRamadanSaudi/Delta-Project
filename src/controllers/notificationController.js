@@ -39,10 +39,6 @@ const getNotifications = async (req, res) => {
       messages = await Message.find({ userId }).sort({ createdAt: -1 });
     }
 
-    if (!messages.length) {
-      return res.status(404).send({ message: 'No notifications found' });
-    }
-
     res.status(200).send({
       result: messages.length,
       data: messages
