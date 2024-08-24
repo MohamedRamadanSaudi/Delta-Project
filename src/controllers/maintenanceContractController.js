@@ -1,6 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const MaintenanceContract = require('../models/maintenanceContractModel');
+const MaintenanceRequest = require('../models/maintenanceRequestModel');
 const User = require('../models/userModel');
 const { uploadFile, deleteFile, getFile } = require('../utils/googleDrive');
 const catchAsync = require('../utils/catchAsync');
@@ -33,12 +34,18 @@ exports.uploadPDF = upload.single('pdf');
 
 // Upload a PDF
 exports.uploadPDFFile = catchAsync(async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId, maintenanceRequestId } = req.body;
 
   // check if user already exists
   const user = await User.findById(userId);
   if (!user) {
     return next(new AppError('User not found', 404));
+  }
+
+  // Check if maintenance request exists
+  const maintenanceRequest = await MaintenanceRequest.findById(maintenanceRequestId);
+  if (!maintenanceRequest) {
+    return next(new AppError('Maintenance request not found', 404));
   }
 
   if (!req.file) {
@@ -53,6 +60,10 @@ exports.uploadPDFFile = catchAsync(async (req, res, next) => {
     filePath: uploadedFile.id,
     fileName: req.file.originalname
   });
+
+  // Associate the PDF with the maintenance request
+  maintenanceRequest.pdfId = pdf._id;
+  await maintenanceRequest.save();
 
   // Delete the file from the local filesystem
   fs.unlinkSync(filePath);

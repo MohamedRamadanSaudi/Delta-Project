@@ -24,8 +24,11 @@ router.get('/normal', auth.auth, auth.isAdmin, maintenanceRequestController.getA
 // Get all urgent maintenance requests
 router.get('/urgent', auth.auth, auth.isAdmin, maintenanceRequestController.getAllUrgentRequests);
 
+// Get my maintenance requests
+router.get('/user', auth.auth, maintenanceRequestController.getMyMaintenanceRequests);
+
 // Get a maintenance request by ID
-router.get('/:id', auth.auth, auth.isAdmin, maintenanceRequestController.getMaintenanceRequestById);
+router.get('/:id', auth.auth, maintenanceRequestController.getMaintenanceRequestById);
 
 // Update a maintenance request by ID
 router.patch('/:id', auth.auth, auth.isAdmin, maintenanceRequestController.updateMaintenanceStatus);

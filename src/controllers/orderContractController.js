@@ -1,6 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const OrderContract = require('../models/orderContractModel');
+const Order = require('../models/orderModel');
 const User = require('../models/userModel');
 const { uploadFile, deleteFile, getFile } = require('../utils/googleDrive');
 const catchAsync = require('../utils/catchAsync');
@@ -33,13 +34,19 @@ exports.uploadPDF = upload.single('pdf');
 
 // Upload a PDF
 exports.uploadPDFFile = catchAsync(async (req, res, next) => {
-  const { userId } = req.body;
+  const { userId, orderId } = req.body;
 
     // check if user already exists
     const user = await User.findById(userId);
     if (!user) {
       return next(new AppError('User not found', 404));
     }
+
+  // Check if order exists
+  const order = await Order.findById(orderId);
+  if (!order) {
+    return next(new AppError('Order not found', 404));
+  }
 
   if (!req.file) {
     return next(new AppError('No file uploaded', 400));
@@ -53,6 +60,10 @@ exports.uploadPDFFile = catchAsync(async (req, res, next) => {
     filePath: uploadedFile.id,
     fileName: req.file.originalname
   });
+
+  // Associate the PDF with the order
+  order.pdfId = pdf._id;
+  await order.save();
 
   // Delete the file from the local filesystem
   fs.unlinkSync(filePath);

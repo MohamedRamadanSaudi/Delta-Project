@@ -229,3 +229,19 @@ exports.deleteMaintenanceRequest = catchAsync(async (req, res, next) => {
     data: null
   });
 });
+
+// Get maintenance requests for the current user
+exports.getMyMaintenanceRequests = catchAsync(async (req, res, next) => {
+  const { _id: userId } = req.user;
+
+  const requests = await MaintenanceRequest.find({ user: userId })
+    .populate('address')
+
+  res.status(200).json({
+    status: 'success',
+    results: requests.length,
+    data: {
+      requests
+    }
+  });
+});

@@ -51,6 +51,10 @@ const maintenanceRequestSchema = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valid video URL!`
     }
+  },
+  pdfId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MaintenanceContractSchema'
   }
 }, {
   timestamps: true

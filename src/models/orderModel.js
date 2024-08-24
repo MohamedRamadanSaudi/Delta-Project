@@ -69,6 +69,10 @@ const orderSchema = new mongoose.Schema({
   status: {
     type: String,
     default: ''
+  },
+  pdfId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'OrderContract'
   }
 },{
   timestamps: true
