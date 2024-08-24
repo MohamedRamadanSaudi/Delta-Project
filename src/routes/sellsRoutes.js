@@ -5,8 +5,8 @@ const auth = require('../middlewares/AuthMiddleware');
 const router = express.Router();
 
 router.post('/', auth.auth, auth.isAdmin, sellsController.createSell);
-router.get('/', auth.auth, sellsController.getAllSells);
-router.get('/:id', auth.auth, sellsController.getSell);
+router.get('/', sellsController.getAllSells);
+router.get('/:id', sellsController.getSell);
 router.patch('/:id', auth.auth, auth.isAdmin, sellsController.updateSell);
 router.delete('/:id', auth.auth, auth.isAdmin,sellsController.deleteSell);
 
