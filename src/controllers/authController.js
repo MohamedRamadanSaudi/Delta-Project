@@ -108,6 +108,10 @@ exports.login = catchAsync(async function (req, res, next) {
   // 2) Check if user exists && verified && password has been set && password is correct
   const user = await User.findOne({ phone: phone  }).select('+password');
 
+  if (!user) {
+    return next(new AppError('Incorrect phone or password', 401));
+  }
+  
   if (!user.isVerified) {
     return next(new AppError('Your account is not verified. Please verify your account to log in.', 403));
   }
@@ -116,7 +120,7 @@ exports.login = catchAsync(async function (req, res, next) {
     return next(new AppError('You have not set a password. Please set a password to log in.', 403));
   }
 
-  if (!user || !(await user.correctPassword(password, user.password))) {
+  if (!(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect phone or password', 401));
   }
 

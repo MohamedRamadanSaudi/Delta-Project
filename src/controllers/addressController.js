@@ -9,9 +9,9 @@ function isValidObjectId(id) {
 }
 
 exports.createAddress = catchAsync(async (req, res, next) => {
-  const { city, area, street, building, flat, locationLink } = req.body;
+  const { city, area, street, building, locationLink } = req.body;
 
-  if (!city || !area || !street || !building || !flat || !locationLink) {
+  if (!city || !area || !street || !building || !locationLink) {
     return next(new AppError('Please provide all address details', 400));
   }
 
@@ -20,7 +20,6 @@ exports.createAddress = catchAsync(async (req, res, next) => {
     area,
     street,
     building,
-    flat,
     locationLink,
     user: req.user._id
   });
