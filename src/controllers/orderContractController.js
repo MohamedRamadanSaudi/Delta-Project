@@ -108,9 +108,16 @@ exports.downloadPDF = catchAsync(async (req, res, next) => {
     return next(new AppError('PDF not found', 404));
   }
 
-  const fileStream = await getFile(pdf.filePath);
-  res.setHeader('Content-Disposition', `attachment; filename=${pdf.fileName}`);
-  fileStream.pipe(res);
+  // Generate a download URL
+  const downloadUrl = `https://drive.google.com/uc?export=download&id=${pdf.filePath}`;
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      fileName: pdf.fileName,
+      downloadUrl: downloadUrl
+    }
+  });
 });
 
 // Get PDF ID for a specific user
