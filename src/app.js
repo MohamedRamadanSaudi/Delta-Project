@@ -40,6 +40,9 @@ app.use(express.urlencoded({ extended: true }));
 // app.use('/api', rateLimiter);
 
 // Routes
+app.use('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 app.use('/api/users', User);
 app.use('/api/otp', Otp);
 app.use('/api/complaints', Complaint);
