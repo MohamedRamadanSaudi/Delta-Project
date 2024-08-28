@@ -37,7 +37,6 @@ const auth = catchAsync(async function (req, res, next) {
     req.user = currentUser;
     next();
   } catch (err) {
-    console.error("Token verification failed:", err); // Debugging
     return next(new AppError('Invalid token! Please log in again.', 401));
   }
 });

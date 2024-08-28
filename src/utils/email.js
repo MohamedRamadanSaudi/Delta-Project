@@ -19,7 +19,6 @@ async function sendEmail(options) {
       text: options.message,
     });
   } catch (error) {
-    console.error('Error sending email:', error);
     throw new Error('Error sending email');
   }
 }

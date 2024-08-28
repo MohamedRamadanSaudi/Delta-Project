@@ -288,7 +288,7 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
       // Now try to delete the empty folder
       await cloudinary.api.delete_folder(product.cloudinaryFolder);
     } catch (error) {
-      console.error('Error deleting resources or folder from Cloudinary:', error);
+      return next(new AppError('Error deleting product images', 500));
     }
   }
 
@@ -308,7 +308,7 @@ async function removeProductFromAllCarts(productId) {
       { $pull: { items: { product: productId } } }
     );
   } catch (error) {
-    console.error('Error removing product from carts:', error);
+    return next(new AppError('Error removing product from carts', 500));
   }
 }
 

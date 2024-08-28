@@ -20,7 +20,6 @@ const connectDB = async () => {
     await mongoose.connect(mongoURISecure);
     console.log('Database Connected Successfully...');
   } catch (err) {
-    console.error(err.message);
     process.exit(1);
   }
 };

@@ -59,13 +59,14 @@ exports.signup = catchAsync(async function (req, res, next) {
 
   // Generate OTP and send it
   const otp = newUser.generateOTP();
-  await newUser.save({ validateBeforeSave: false });
 
   await sendEmail({
     email: email,
     subject: 'Your OTP Code for Account Verification at Delta',
     message: `Your OTP code for Account Verification is: \n\n ${otp} \n\n It is valid for 1 minute.`,
   });
+
+  await newUser.save({ validateBeforeSave: false });
 
   res.status(200).json({
     status: 'success',
@@ -195,7 +196,6 @@ exports.forgotPassword = catchAsync(async function (req, res, next) {
       message: 'OTP sent to email!',
     });
   } catch (err) {
-    console.error('Error sending email:', err);
 
     user.otp = undefined;
     user.otpExpires = undefined;
