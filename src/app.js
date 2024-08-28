@@ -37,7 +37,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 // Apply rate limiting for non-admin users
-// app.use('/api', rateLimiter);
+app.use('/api', rateLimiter);
 
 // Routes
 app.use('/api/health', (req, res) => {

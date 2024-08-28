@@ -27,7 +27,21 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage });
+// Set file size limit to 5MB (5 * 1024 * 1024 bytes)
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept PDF files only
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new AppError('Only PDF files are allowed!', 400), false);
+    }
+  }
+});
 
 // Middleware for uploading a PDF
 exports.uploadPDF = upload.single('pdf');
