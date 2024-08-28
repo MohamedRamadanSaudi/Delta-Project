@@ -26,8 +26,8 @@ exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
 
   if (req.files) {
     if (req.files.photos) {
-      const photoUploadPromises = req.files.photos.map(file => 
-        cloudinary.uploader.upload(file.path, { 
+      const photoUploadPromises = req.files.photos.map(file =>
+        cloudinary.uploader.upload(file.path, {
           resource_type: 'image',
           folder: 'maintenance_requests',
           quality: 'auto:low',
@@ -39,7 +39,7 @@ exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
     }
 
     if (req.files.video) {
-      const videoResult = await cloudinary.uploader.upload(req.files.video[0].path, { 
+      const videoResult = await cloudinary.uploader.upload(req.files.video[0].path, {
         resource_type: 'video',
         folder: 'maintenance_requests',
         quality: 'auto:low',
@@ -169,17 +169,17 @@ exports.updateMaintenanceStatus = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  
+
   const request = await MaintenanceRequest.findByIdAndUpdate(id, { status }, { new: true });
-  
+
   if (!request) {
     return next(new AppError('Maintenance request not found', 404));
   }
-  
+
   if (status === 'completed') {
     await mongoose.model('User').findByIdAndUpdate(request.user, { isUserHasMaintenanceRequest: true });
   }
-  
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -190,12 +190,7 @@ exports.updateMaintenanceStatus = catchAsync(async (req, res, next) => {
 
 // Helper function to delete file from Cloudinary
 const deleteFileFromCloudinary = async (publicId) => {
-  try {
-    const result = await cloudinary.uploader.destroy(publicId);
-    console.log('File deleted from Cloudinary:', result);
-  } catch (error) {
-    console.error('Error deleting file from Cloudinary:', error);
-  }
+  await cloudinary.uploader.destroy(publicId);
 };
 
 // Delete a maintenance request by ID

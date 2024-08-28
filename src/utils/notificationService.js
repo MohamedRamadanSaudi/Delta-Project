@@ -13,10 +13,8 @@ const sendNotification = async (userId, token, message) => {
   let status = 'sent';
 
   try {
-    const response = await admin.messaging().sendToDevice(token, payload);
-    console.log('Notification sent successfully:', response);
+    await admin.messaging().sendToDevice(token, payload);
   } catch (error) {
-    console.error('Error sending notification:', error);
     status = 'failed';
   }
 

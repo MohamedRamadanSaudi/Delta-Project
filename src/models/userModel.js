@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
   anotherPhone: {
     type: String,
     validate: {
-      validator: function(value) {
+      validator: function (value) {
         return value === null || value === '' || validator.isMobilePhone(value);
       },
       message: 'Please provide a valid phone number'
@@ -47,7 +47,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     minlength: 8,
     validate: {
-      validator: function(value) {
+      validator: function (value) {
         return /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(value);
       },
       message: 'Password must have at least one capital letter, one number, and be at least 8 characters long'
@@ -57,7 +57,7 @@ const UserSchema = new mongoose.Schema({
   confirm_password: {
     type: String,
     validate: {
-      validator: function(el) {
+      validator: function (el) {
         return el === this.password;
       },
       message: 'Passwords are not the same!'
@@ -96,7 +96,7 @@ const UserSchema = new mongoose.Schema({
   }
 });
 
-UserSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function (next) {
   // Only run this function if password was actually modified
   if (!this.isModified('password')) return next();
 
@@ -108,24 +108,24 @@ UserSchema.pre('save', async function(next) {
   next();
 });
 
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', function (next) {
   if (!this.isModified('password') || this.isNew) return next();
 
   this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
-UserSchema.pre(/^find/, function(next) {
+UserSchema.pre(/^find/, function (next) {
   // this points to the current query
   this.find({ active: { $ne: false } });
   next();
 });
 
-UserSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
+UserSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-UserSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+UserSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
 
@@ -135,7 +135,7 @@ UserSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
   return false;
 };
 
-UserSchema.methods.createPasswordResetToken = function() {
+UserSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
 
   this.passwordResetToken = crypto
@@ -143,15 +143,13 @@ UserSchema.methods.createPasswordResetToken = function() {
     .update(resetToken)
     .digest('hex');
 
-  console.log({ resetToken }, this.passwordResetToken);
-
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
 };
 
 // Generate OTP and set expiry time
-UserSchema.methods.generateOTP = function() {
+UserSchema.methods.generateOTP = function () {
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
   this.otp = crypto.createHash('sha256').update(otp).digest('hex');
   this.otpExpires = Date.now() + 1 * 60 * 1000; // OTP expires in 1 minute

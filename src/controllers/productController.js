@@ -88,7 +88,7 @@ exports.uploadProductPhotosForProduct = catchAsync(async (req, res, next) => {
   const maxUploads = 5 - existingPhotosCount;
   const filesToUpload = req.files.slice(0, maxUploads);
 
-  const uploadPromises = filesToUpload.map(file => 
+  const uploadPromises = filesToUpload.map(file =>
     cloudinary.uploader.upload(file.path, {
       folder: product.cloudinaryFolder
     })
@@ -267,7 +267,7 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
         prefix: product.cloudinaryFolder
       });
 
-      const deletePromises = resources.map(resource => 
+      const deletePromises = resources.map(resource =>
         cloudinary.uploader.destroy(resource.public_id)
       );
 
@@ -287,7 +287,6 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
 
       // Now try to delete the empty folder
       await cloudinary.api.delete_folder(product.cloudinaryFolder);
-      console.log(`Deleted folder: ${product.cloudinaryFolder}`);
     } catch (error) {
       console.error('Error deleting resources or folder from Cloudinary:', error);
     }
@@ -295,8 +294,8 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
 
   await product.deleteOne();
 
-    // Remove the deleted product from all carts
-    removeProductFromAllCarts(id);
+  // Remove the deleted product from all carts
+  removeProductFromAllCarts(id);
 
   res.status(200).json({ message: 'Product and associated images deleted successfully' });
 });
@@ -308,7 +307,6 @@ async function removeProductFromAllCarts(productId) {
       { "items.product": productId },
       { $pull: { items: { product: productId } } }
     );
-    console.log(`Product ${productId} removed from all carts`);
   } catch (error) {
     console.error('Error removing product from carts:', error);
   }

@@ -44,7 +44,7 @@ exports.signup = catchAsync(async function (req, res, next) {
 
   // Check if user already exists
   const user = await User.findOne({ email });
-  
+
   if (user) {
     return next(new AppError('User already exists', 400));
   }
@@ -60,8 +60,6 @@ exports.signup = catchAsync(async function (req, res, next) {
   // Generate OTP and send it
   const otp = newUser.generateOTP();
   await newUser.save({ validateBeforeSave: false });
-
-  console.log('Sending OTP email to:', email);
 
   await sendEmail({
     email: email,
@@ -106,12 +104,12 @@ exports.login = catchAsync(async function (req, res, next) {
     return next(new AppError('Please provide phone and password!', 400));
   }
   // 2) Check if user exists && verified && password has been set && password is correct
-  const user = await User.findOne({ phone: phone  }).select('+password');
+  const user = await User.findOne({ phone: phone }).select('+password');
 
   if (!user) {
     return next(new AppError('Incorrect phone or password', 401));
   }
-  
+
   if (!user.isVerified) {
     return next(new AppError('Your account is not verified. Please verify your account to log in.', 403));
   }
@@ -186,8 +184,6 @@ exports.forgotPassword = catchAsync(async function (req, res, next) {
   const message = `Your OTP code for Password Reset is: \n\n ${otp} \n\n It is valid for 1 minute. \n\n If you have not requested this, please ignore this email.`;
 
   try {
-    console.log('Sending OTP email to:', user.email);
-
     await sendEmail({
       email: user.email,
       subject: 'Your OTP Code for Password Reset',
@@ -233,7 +229,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.updatePassword = catchAsync(async function (req, res, next) {
-  const user = await User.findById(req.user._id).select('+password'); 
+  const user = await User.findById(req.user._id).select('+password');
 
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     return next(new AppError('Your current password is wrong.', 401));

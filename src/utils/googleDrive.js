@@ -43,7 +43,6 @@ const uploadFile = async (filePath) => {
 
     return response.data;
   } catch (error) {
-    console.log('Error uploading file:', error.message);
     throw error;
   }
 };
@@ -57,7 +56,6 @@ const deleteFile = async (fileId) => {
       fileId,
     });
   } catch (error) {
-    console.log('Error deleting file:', error.message);
     throw error;
   }
 };
@@ -74,7 +72,6 @@ const getFile = async (fileId) => {
 
     return response.data;
   } catch (error) {
-    console.log('Error getting file:', error.message);
     throw error;
   }
 };

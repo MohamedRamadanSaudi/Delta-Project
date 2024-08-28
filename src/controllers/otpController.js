@@ -15,8 +15,6 @@ exports.sendOTP = catchAsync(async (req, res, next) => {
   const otp = user.generateOTP();
   await user.save({ validateBeforeSave: false });
 
-  console.log('Sending OTP email to:', email);
-  
   await sendEmail({
     email: email,
     subject: 'Your OTP Code',
@@ -38,7 +36,6 @@ exports.verifyOTP = catchAsync(async (req, res, next) => {
   }
 
   const hashedOTP = crypto.createHash('sha256').update(otp).digest('hex');
-  console.log(`Stored OTP: ${user.otp}, Expires: ${user.otpExpires}, Received Hashed OTP: ${hashedOTP}`);
 
   if (!user.otp || user.otpExpires < Date.now()) {
     return next(new AppError('OTP has expired', 400));
