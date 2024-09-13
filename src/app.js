@@ -37,6 +37,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 // Apply rate limiting for non-admin users
+app.set('trust proxy', 1)
 app.use('/api', rateLimiter);
 
 // Routes
