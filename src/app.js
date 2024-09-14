@@ -24,6 +24,7 @@ const orderContract = require('./routes/orderContractRoutes');
 const maintenanceContract = require('./routes/maintenanceContractRoutes');
 const Slider = require('./routes/sliderRoutes');
 const Sells = require('./routes/sellsRoutes');
+const { default: mongoose } = require('mongoose');
 
 const app = express();
 
@@ -42,7 +43,16 @@ app.use('/api', rateLimiter);
 
 // Routes
 app.use('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+  try {
+    // check database connection
+    if (mongoose.connection.readyState === 1) {
+      res.status(200).json({ status: 'UP', message: 'Everything is ok' });
+    } else {
+      res.status(500).json({ status: 'DOWN', message: 'Database connection is not established' });
+    }
+  } catch (error) {
+    res.status(500).json({ status: 'DOWN', message: error.message });
+  }
 });
 app.use('/api/users', User);
 app.use('/api/otp', Otp);
