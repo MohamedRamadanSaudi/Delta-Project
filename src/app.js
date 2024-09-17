@@ -9,6 +9,8 @@ const connectDB = require('./config/database');
 const AppError = require('./utils/appError');
 const errorHandler = require('./middlewares/errorHandler');
 const rateLimiter = require('./middlewares/rateLimiter');
+const HealthCheck = require('./utils/healthCheck');
+const redisClient = require('./config/redis');
 
 const User = require('./routes/userRoutes');
 const Otp = require('./routes/otpRoutes');
@@ -41,19 +43,13 @@ app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1)
 app.use('/api', rateLimiter);
 
-// Routes
-app.use('/api/health', (req, res) => {
-  try {
-    // check database connection
-    if (mongoose.connection.readyState === 1) {
-      res.status(200).json({ status: 'UP', message: 'Everything is ok' });
-    } else {
-      res.status(500).json({ status: 'DOWN', message: 'Database connection is not established' });
-    }
-  } catch (error) {
-    res.status(500).json({ status: 'DOWN', message: error.message });
-  }
+app.use((req, res, next) => {
+  req.redisClient = redisClient;
+  next();
 });
+
+// Routes
+app.use('/api/health', HealthCheck);
 app.use('/api/users', User);
 app.use('/api/otp', Otp);
 app.use('/api/complaints', Complaint);

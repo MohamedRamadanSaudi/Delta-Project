@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const auth = require('../middlewares/AuthMiddleware');
+const cache = require('../middlewares/cache');
 
 // Create a new product
 router.post('/', auth.auth, auth.isAdmin, productController.uploadProductMainPhoto, productController.createProduct);
@@ -13,7 +14,7 @@ router.post('/:id/photos', auth.auth, auth.isAdmin, productController.uploadProd
 router.post('/:id/main-photo', auth.auth, auth.isAdmin, productController.uploadProductMainPhoto, productController.updateProductMainPhoto);
 
 // Get all products, optionally filtered by category
-router.get('/', productController.getProducts);
+router.get('/', cache(300), productController.getProducts);
 router.get('/admin', auth.auth, auth.isAdmin, productController.getProducts);
 
 // Search products by name
