@@ -101,7 +101,6 @@ const getCategory = catchAsync(async (req, res, next) => {
 // Get All Categories
 const getAllCategories = catchAsync(async (req, res, next) => {
   const categories = await ProductCategory.find();
-  const total = await ProductCategory.countDocuments();
 
   res.status(200).json({
     status: 'success',
