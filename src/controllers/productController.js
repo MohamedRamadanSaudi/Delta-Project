@@ -311,7 +311,7 @@ async function removeProductFromAllCarts(productId) {
       { $pull: { items: { product: productId } } }
     );
   } catch (error) {
-    return next(new AppError('Error removing product from carts', 500));
+    throw new Error('Error removing product from carts');
   }
 }
 
