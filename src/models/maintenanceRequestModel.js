@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
 
 const maintenanceRequestSchema = new mongoose.Schema({
   type: {
@@ -37,7 +36,7 @@ const maintenanceRequestSchema = new mongoose.Schema({
   photos: [{
     type: String,
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         return v.match(/^https?:\/\/.*\/.*\.(png|jpg|jpeg|gif)$/gi);
       },
       message: props => `${props.value} is not a valid image URL!`
@@ -46,7 +45,7 @@ const maintenanceRequestSchema = new mongoose.Schema({
   video: {
     type: String,
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         return v === '' || v.match(/^https?:\/\/.*\/.*\.(mp4|mov|avi)$/gi);
       },
       message: props => `${props.value} is not a valid video URL!`

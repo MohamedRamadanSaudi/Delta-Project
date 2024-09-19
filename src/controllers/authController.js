@@ -1,10 +1,8 @@
-const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const catchAsync = require('./../utils/catchAsync.js');
 const AppError = require('../utils/appError.js');
 const sendEmail = require('./../utils/email.js');
-const path = require('path');
 require('dotenv').config();
 
 function signToken(id) {

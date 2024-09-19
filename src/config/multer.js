@@ -4,7 +4,7 @@ const cloudinary = require('./cloudinary');
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: async (req, file) => {
+  params: (req, file) => {
     const folder = req.baseUrl.includes('slider') ? 'slider' : 'products';
     return {
       folder: folder,
