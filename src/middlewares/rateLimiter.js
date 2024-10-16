@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 // Rate limiter middleware for non-admin users
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100,
+  limit: 500,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: 'draft-7',
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
