@@ -8,7 +8,6 @@ const sellsSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, 'Please provide the email'],
-    unique: [true, 'Email already exists'],
   },
   mobilePhone: {
     type: String,
