@@ -3,6 +3,7 @@ const Message = require('../models/messageModel');
 
 const sendNotification = async (userId, token, message) => {
   const payload = {
+    token,
     notification: {
       title: message.title,
       body: message.body,
@@ -13,8 +14,9 @@ const sendNotification = async (userId, token, message) => {
   let status = 'sent';
 
   try {
-    await admin.messaging().sendToDevice(token, payload);
+    await admin.messaging().send(payload);
   } catch (error) {
+    console.log('Error sending message:', error);
     status = 'failed';
   }
 
