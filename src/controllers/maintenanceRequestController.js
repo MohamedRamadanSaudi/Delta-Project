@@ -30,7 +30,6 @@ exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
         cloudinary.uploader.upload(file.path, {
           resource_type: 'image',
           folder: 'maintenance_requests',
-          quality: 'auto:low',
           fetch_format: 'auto',
         })
       );
@@ -42,7 +41,6 @@ exports.createMaintenanceRequest = catchAsync(async (req, res, next) => {
       const videoResult = await cloudinary.uploader.upload(req.files.video[0].path, {
         resource_type: 'video',
         folder: 'maintenance_requests',
-        quality: 'auto:low',
         fetch_format: 'auto',
       });
       videoUrl = videoResult.secure_url;
