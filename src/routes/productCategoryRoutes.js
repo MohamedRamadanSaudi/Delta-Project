@@ -2,10 +2,9 @@ const express = require('express');
 const categoryController = require('../controllers/productCategoryController');
 const auth = require('../middlewares/AuthMiddleware');
 const router = express.Router();
-const cache = require('../middlewares/cache');
 
 router.post('/', auth.auth, auth.isAdmin, categoryController.upload.single('photo'), categoryController.createCategory)
-router.get('/', cache(300), categoryController.getAllCategories)
+router.get('/', categoryController.getAllCategories)
 router.get('/admin', auth.auth, auth.isAdmin, categoryController.getAllCategories)
 router.get('/:id', categoryController.getCategory)
 router.get('/admin/:id', auth.auth, auth.isAdmin, categoryController.getCategory)

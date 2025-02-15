@@ -10,7 +10,6 @@ const AppError = require('./utils/appError');
 const errorHandler = require('./middlewares/errorHandler');
 const rateLimiter = require('./middlewares/rateLimiter');
 const HealthCheck = require('./utils/healthCheck');
-const redisClient = require('./config/redis');
 
 const User = require('./routes/userRoutes');
 const Otp = require('./routes/otpRoutes');
@@ -42,11 +41,6 @@ app.use(express.urlencoded({ extended: true }));
 // Apply rate limiting for non-admin users
 app.set('trust proxy', 1)
 app.use('/api', rateLimiter);
-
-app.use((req, res, next) => {
-  req.redisClient = redisClient;
-  next();
-});
 
 // Routes
 app.use('/api/health', HealthCheck);

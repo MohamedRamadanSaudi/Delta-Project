@@ -2,12 +2,11 @@ const express = require('express');
 const sliderController = require('../controllers/sliderController');
 const upload = require('../config/multer');
 const auth = require('../middlewares/AuthMiddleware');
-const cache = require('../middlewares/cache');
 
 const router = express.Router();
 
 // Route for getting all photos (accessible by all users)
-router.route('/').get(cache(300), sliderController.getAllPhotos);
+router.route('/').get(sliderController.getAllPhotos);
 router.route('/admin').get(auth.auth, auth.isAdmin, sliderController.getAllPhotos);
 
 // Route for adding a photo (admin only)

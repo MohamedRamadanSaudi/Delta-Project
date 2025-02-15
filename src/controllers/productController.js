@@ -7,7 +7,6 @@ const catchAsync = require('../utils/catchAsync');
 const cloudinary = require('../config/cloudinary');
 const upload = require('../config/multer');
 const Cart = require('../models/cartModel');
-const redisClient = require('../config/redis');
 
 // Utility function to validate MongoDB Object IDs
 function isValidObjectId(id) {
@@ -62,8 +61,7 @@ exports.createProduct = catchAsync(async (req, res, next) => {
     });
 
     await newProduct.save();
-    // Invalidate product cache
-    await redisClient.del('__express__/api/products');
+
     res.status(201).json(newProduct);
   } else {
     return next(new AppError('Main photo is required', 400));

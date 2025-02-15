@@ -2,7 +2,6 @@ const Slider = require('../models/sliderModel');
 const cloudinary = require('../config/cloudinary');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const redisClient = require('../config/redis');
 
 // Add a new photo to the slider
 exports.addPhoto = catchAsync(async (req, res, next) => {
@@ -21,9 +20,6 @@ exports.addPhoto = catchAsync(async (req, res, next) => {
     photoUrl: req.file.path,
     productId: productId
   });
-
-  // Invalidate slider cache
-  redisClient.del('__express__/api/slider');
 
   res.status(201).json({
     status: 'success',
