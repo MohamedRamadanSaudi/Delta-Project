@@ -246,3 +246,25 @@ exports.updatePassword = catchAsync(async function (req, res, next) {
     token,
   });
 });
+
+
+exports.seedAdmin = catchAsync(async function (req, res, next) {
+  const admin = await User.findOne({ email: process.env.ADMIN_EMAIL });
+  if (admin) {
+    return next(new AppError('seed admin already exists', 400));
+  }
+  const seedAdmin = await User.create({
+    name: 'Admin',
+    email: process.env.ADMIN_EMAIL,
+    phone: process.env.ADMIN_PHONE,
+    role: 'admin',
+    password: process.env.ADMIN_PASSWORD,
+    confirm_password: process.env.ADMIN_PASSWORD,
+    isVerified: true,
+    isPasswordSet: true
+  });
+  res.status(200).json({
+    status: 'success',
+    message: 'seed admin created successfully',
+  });
+});
