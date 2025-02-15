@@ -4,7 +4,8 @@
   "license": "MIT",
   "main": "src/app.js",
   "scripts": {
-    "server": "nodemon src/app.js"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
   },
   "author": "Mohamed Ramadan",
   "description": "Delta-Project is the backend for a comprehensive customer service platform designed for an elevator company",
