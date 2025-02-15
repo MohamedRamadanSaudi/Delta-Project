@@ -13,7 +13,6 @@ Delta-Project is the backend for a comprehensive customer service platform desig
 - **Complaint Management:** Enable customers to file complaints and track their resolution status.
 - **Notification Service:** Real-time notifications for order status, maintenance schedules, and other critical updates.
 - **File Uploads:** Support for uploading and managing files (e.g., PDFs, images, videos) using Cloudinary and Google Drive.
-- **Caching:** Implemented Redis for caching frequently accessed data to improve performance.
 - **Rate Limiting:** Applied rate limiting to prevent abuse of the API.
 
 ## Technologies Used
@@ -23,7 +22,6 @@ Delta-Project is the backend for a comprehensive customer service platform desig
 - **MongoDB & Mongoose:** Database management for storing customer and product data.
 - **Firebase & Cloudinary:** Used for notification services and managing media files.
 - **JWT:** Implemented for secure authentication and authorization.
-- **Redis:** Used for caching and rate limiting.
 - **Docker:** Containerized the application for consistent environments across development, testing, and production.
 - **Google Drive API:** Used for storing and managing PDF files.
 - **Multer:** Middleware for handling file uploads.
@@ -34,7 +32,6 @@ Delta-Project is the backend for a comprehensive customer service platform desig
 
 - Node.js (v16 or higher)
 - MongoDB
-- Redis
 
 ### Steps to Run the Project Locally
 
@@ -64,9 +61,6 @@ Delta-Project is the backend for a comprehensive customer service platform desig
    CLOUDINARY_API_KEY=<your_cloudinary_api_key>
    CLOUDINARY_API_SECRET=<your_cloudinary_api_secret>
    FIREBASE_SERVICE_ACCOUNT=<base64_encoded_firebase_service_account_json>
-   REDIS_HOST=<your_redis_host>
-   REDIS_PORT=<your_redis_port>
-   REDIS_PASSWORD=<your_redis_password>
    GOOGLE_DRIVE_API_KEY=<base64_encoded_google_drive_api_key>
    GOOGLE_DRIVE_FOLDER_ID=<your_google_drive_folder_id>
    EMAIL_HOST=<your_email_host>
