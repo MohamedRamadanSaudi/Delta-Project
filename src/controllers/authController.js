@@ -181,9 +181,6 @@ exports.forgotPassword = catchAsync(async function (req, res, next) {
   const otp = user.generateOTP();
   await user.save({ validateBeforeSave: false });
 
-  // Send OTP to email
-  const message = `Your OTP code for Password Reset is: \n\n ${otp} \n\n It is valid for 1 minute. \n\n If you have not requested this, please ignore this email.`;
-
   try {
     await sendEmail({
       email: user.email,
@@ -257,7 +254,7 @@ exports.seedAdmin = catchAsync(async function (req, res, next) {
   if (admin) {
     return next(new AppError('seed admin already exists', 400));
   }
-  const seedAdmin = await User.create({
+  await User.create({
     name: 'Admin',
     email: process.env.ADMIN_EMAIL,
     phone: process.env.ADMIN_PHONE,
