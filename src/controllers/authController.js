@@ -60,8 +60,10 @@ exports.signup = catchAsync(async function (req, res, next) {
 
   await sendEmail({
     email: email,
-    subject: 'Your OTP Code for Account Verification at Delta',
-    message: `Your OTP code for Account Verification is: \n\n ${otp} \n\n It is valid for 1 minute.`,
+    name: name,
+    otp: otp,
+    template: 'signup-email',
+    subject: 'Your OTP Code for Account Verification at Delta'
   });
 
   await newUser.save({ validateBeforeSave: false });
@@ -179,14 +181,13 @@ exports.forgotPassword = catchAsync(async function (req, res, next) {
   const otp = user.generateOTP();
   await user.save({ validateBeforeSave: false });
 
-  // Send OTP to email
-  const message = `Your OTP code for Password Reset is: \n\n ${otp} \n\n It is valid for 1 minute. \n\n If you have not requested this, please ignore this email.`;
-
   try {
     await sendEmail({
       email: user.email,
-      subject: 'Your OTP Code for Password Reset',
-      message: message,
+      name: user.name,
+      otp: otp,
+      template: 'reset-email',
+      subject: 'Your OTP Code for Password Reset'
     });
 
     res.status(200).json({
@@ -253,7 +254,7 @@ exports.seedAdmin = catchAsync(async function (req, res, next) {
   if (admin) {
     return next(new AppError('seed admin already exists', 400));
   }
-  const seedAdmin = await User.create({
+  await User.create({
     name: 'Admin',
     email: process.env.ADMIN_EMAIL,
     phone: process.env.ADMIN_PHONE,
