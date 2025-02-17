@@ -16,8 +16,10 @@ exports.sendOTP = catchAsync(async (req, res, next) => {
 
   await sendEmail({
     email: email,
-    subject: 'Your OTP Code',
-    message: `Your OTP is ${otp} and is valid for 1 minute. If you have not requested this, please ignore this email.`,
+    name: user.name,
+    otp: otp,
+    template: 'signup-email',
+    subject: 'Your OTP Code'
   });
 
   await user.save({ validateBeforeSave: false });
