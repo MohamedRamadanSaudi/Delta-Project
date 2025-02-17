@@ -1,0 +1,13 @@
+extends base-email
+
+block content
+  .container
+    h2 Password Reset Request
+    p Hi #{name},
+    p We received a request to reset your password. Please use the following OTP code to proceed:
+    .otp-code #{otp}
+    p This code will expire in 1 minute.
+    p If you didn't request this password reset, please ignore this email or contact support if you're concerned.
+    .footer
+      p This is an automated message, please do not reply.
+      p &copy; #{new Date().getFullYear()} Delta. All rights reserved.

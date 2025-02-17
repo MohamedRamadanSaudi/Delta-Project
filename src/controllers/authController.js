@@ -60,8 +60,10 @@ exports.signup = catchAsync(async function (req, res, next) {
 
   await sendEmail({
     email: email,
-    subject: 'Your OTP Code for Account Verification at Delta',
-    message: `Your OTP code for Account Verification is: \n\n ${otp} \n\n It is valid for 1 minute.`,
+    name: name,
+    otp: otp,
+    template: 'signup-email',
+    subject: 'Your OTP Code for Account Verification at Delta'
   });
 
   await newUser.save({ validateBeforeSave: false });
@@ -185,8 +187,10 @@ exports.forgotPassword = catchAsync(async function (req, res, next) {
   try {
     await sendEmail({
       email: user.email,
-      subject: 'Your OTP Code for Password Reset',
-      message: message,
+      name: user.name,
+      otp: otp,
+      template: 'reset-email',
+      subject: 'Your OTP Code for Password Reset'
     });
 
     res.status(200).json({
